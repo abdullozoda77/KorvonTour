@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Расход — Korvon{% endblock %}
+{% block nav_expenses %}active{% endblock %}
+
+{% block content %}
+<div class="ed-header">
+    <a href="{% url 'expense_list' %}" class="btn btn-ghost">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        Назад к расходам
+    </a>
+    <div style="display:flex; gap:8px;">
+        <a href="{% url 'update_expense' expense.id %}" class="btn btn-ghost">Изменить</a>
+        <a href="{% url 'delete_expense' expense.id %}" class="btn btn-danger">Удалить</a>
+    </div>
+</div>
+
+<div class="ed-layout">
+    <div class="ed-side">
+        <div class="ed-icon">💸</div>
+        <div class="ed-type">{{ expense.get_expense_type_display }}</div>
+        <h1>{{ expense.name }}</h1>
+        <div class="ed-total-label">Итого</div>
+        <div class="ed-total">{{ expense.total }} <small>сом</small></div>
+        <div class="ed-dates">Дата: {{ expense.date|date:"d.m.Y" }}</div>
+    </div>
+
+    <div class="ed-main">
+        <h3>Детали расхода</h3>
+        <div class="ed-grid">
+            <div class="ed-box">
+                <div class="pm-label">Цена</div>
+                <div class="pm-value org">{{ expense.price }} сом</div>
+            </div>
+            <div class="ed-box">
+                <div class="pm-label">Кол-во</div>
+                <div class="pm-value">{{ expense.quantity|default:"—" }}</div>
+            </div>
+            <div class="ed-box">
+                <div class="pm-label">Тип</div>
+                <div class="pm-value" style="font-size:15px;">{{ expense.get_expense_type_display }}</div>
+            </div>
+            {% if expense.date %}
+            <div class="ed-box">
+                <div class="pm-label">Дата</div>
+                <div class="pm-value" style="font-size:15px;">{{ expense.date|date:"d.m.Y" }}</div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="ed-desc-title">Описание</div>
+        <div class="ed-desc">{{ expense.description|default:"Описание не заполнено." }}</div>
+
+        {% if expense.product %}
+        <div class="ed-desc-title">Связанный товар</div>
+        <a class="ed-product" href="{% url 'product_detail' expense.product.id %}">
+            {% if expense.product.photo %}
+                <img src="{{ expense.product.photo.url }}" alt="{{ expense.product.name }}">
+            {% else %}
+                <span class="thumb">📦</span>
+            {% endif %}
+            <div>
+                <div class="ep-name">{{ expense.product.name }}</div>
+                <div class="ep-meta">{{ expense.product.unique_code }}</div>
+            </div>
+            <span class="ep-go">Открыть →</span>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

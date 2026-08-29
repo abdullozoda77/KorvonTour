@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}{{ category.name }} — Korvon{% endblock %}
+{% block nav_categories %}active{% endblock %}
+
+{% block content %}
+<div class="cd-header">
+    <a href="{% url 'category_list' %}" class="btn btn-ghost">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        Назад к категориям
+    </a>
+    <div style="display:flex; gap:8px;">
+        <a href="{% url 'update_category' category.id %}" class="btn btn-ghost">Изменить</a>
+        <a href="{% url 'delete_category' category.id %}" class="btn btn-danger">Удалить</a>
+    </div>
+</div>
+
+<div class="cd-layout">
+    <div class="cd-side">
+        <div class="cd-icon">🏷️</div>
+        <h1>{{ category.name }}</h1>
+        <div class="cd-count">{{ products|length }} товаров в категории</div>
+        <div class="cd-desc">{{ category.description|default:"Нет описания." }}</div>
+    </div>
+
+    <div class="cd-main">
+        <h3>Товары категории</h3>
+        <div class="cd-list">
+            {% for p in products %}
+            <a class="cd-item" href="{% url 'product_detail' p.id %}">
+                {% if p.photo %}
+                    <img src="{{ p.photo.url }}" alt="{{ p.name }}">
+                {% else %}
+                    <span class="thumb">📦</span>
+                {% endif %}
+                <div>
+                    <div class="ci-name">{{ p.name }}</div>
+                    <div class="ci-meta">{{ p.unique_code }}</div>
+                </div>
+                <div class="ci-price">
+                    {{ p.quantity }} шт.
+                    <small>{{ p.furush }} сом</small>
+                </div>
+            </a>
+            {% empty %}
+            <div class="empty-cd">В этой категории пока нет товаров.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

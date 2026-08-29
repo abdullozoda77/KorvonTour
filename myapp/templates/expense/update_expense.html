@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Изменить расход — Korvon{% endblock %}
+{% block nav_expenses %}active{% endblock %}
+
+{% block content %}
+<div class="page-header expense-header">
+    <div>
+        <h1>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Изменить расход
+        </h1>
+        <div class="page-sub">Обновите данные расхода</div>
+    </div>
+    <a href="{% url 'expense_list' %}" class="btn btn-ghost">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        Назад
+    </a>
+</div>
+
+<div class="card form-card">
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="form-errors">
+            {% for error in form.non_field_errors %}
+            <div class="form-error">{{ error }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="{{ form.expense_type.id_for_label }}">{{ form.expense_type.label }}</label>
+                {{ form.expense_type }}
+                {% if form.expense_type.errors %}{% for error in form.expense_type.errors %}<div class="form-error">{{ error }}</div>{% endfor %}{% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                {{ form.name }}
+                {% if form.name.errors %}{% for error in form.name.errors %}<div class="form-error">{{ error }}</div>{% endfor %}{% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
+                {{ form.price }}
+                {% if form.price.errors %}{% for error in form.price.errors %}<div class="form-error">{{ error }}</div>{% endfor %}{% endif %}
+            </div>
+
+            <div class="form-group" id="quantity-field">
+                <label for="{{ form.quantity.id_for_label }}">{{ form.quantity.label }}</label>
+                {{ form.quantity }}
+                {% if form.quantity.errors %}{% for error in form.quantity.errors %}<div class="form-error">{{ error }}</div>{% endfor %}{% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.date.id_for_label }}">{{ form.date.label }}</label>
+                {{ form.date }}
+                {% if form.date.errors %}{% for error in form.date.errors %}<div class="form-error">{{ error }}</div>{% endfor %}{% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.errors %}{% for error in form.description.errors %}<div class="form-error">{{ error }}</div>{% endfor %}{% endif %}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-expense">
+                <svg viewBox="0 0 24 24"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6"/><path d="M18 2v6"/><path d="M15 8l3-4 3 4"/></svg>
+                Сохранить
+            </button>
+            <a href="{% url 'expense_list' %}" class="btn btn-ghost">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const expenseType = document.getElementById("id_expense_type");
+    const quantityField = document.getElementById("quantity-field");
+    function toggleQuantity() {
+        if (expenseType.value === "products") {
+            quantityField.style.display = "grid";
+        } else {
+            quantityField.style.display = "none";
+        }
+    }
+    if (expenseType) {
+        expenseType.addEventListener("change", toggleQuantity);
+        toggleQuantity();
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Товары — Korvon{% endblock %}
+{% block nav_products %}active{% endblock %}
+
+{% block content %}
+<div class="page-header pr-header">
+    <div>
+        <h1>
+            <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            Товары
+        </h1>
+        <div class="page-sub">Управление каталогом товаров ({{ product|length }} шт.)</div>
+    </div>
+    <a href="{% url 'create_product' %}" class="btn btn-primary">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        Добавить товар
+    </a>
+</div>
+
+<div class="pr-summary">
+    <div class="sum-card">
+        <div class="sum-label">Товаров</div>
+        <div class="sum-value">{{ product|length }} <small>шт.</small></div>
+    </div>
+</div>
+
+<div class="pr-grid">
+    {% for p in product %}
+    <div class="pr-card">
+        {% if p.photo %}
+            <img class="pr-photo" src="{{ p.photo.url }}" alt="{{ p.name }}">
+        {% else %}
+            <div class="pr-photo">📦</div>
+        {% endif %}
+        <div class="pr-body">
+            <div>
+                <div class="pr-name">{{ p.name }}</div>
+                <div class="pr-code">Код: {{ p.unique_code }}</div>
+            </div>
+            <div class="pr-badges">
+                <span class="pr-badge teal">Кол-во: {{ p.quantity }}</span>
+                {% if p.category %}<span class="pr-badge">{{ p.category }}</span>{% endif %}
+                {% if p.country %}<span class="pr-badge">{{ p.country }}</span>{% endif %}
+            </div>
+            <div class="pr-prices">
+                <div class="pr-price">
+                    <div class="pp-label">Харид</div>
+                    <div class="pp-value pos">{{ p.xarid }} сом</div>
+                </div>
+                <div class="pr-price">
+                    <div class="pp-label">Фуруш</div>
+                    <div class="pp-value org">{{ p.furush }} сом</div>
+                </div>
+            </div>
+            <div class="pr-actions">
+                <a href="{% url 'update_product' p.id %}" class="btn btn-ghost btn-sm">Изменить</a>
+                <a href="{% url 'delete_product' p.id %}" class="btn btn-danger btn-sm">Удалить</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-pr" style="grid-column: 1 / -1;">
+        <div style="font-size: 34px; margin-bottom: 8px;">📦</div>
+        Товаров пока нет. Добавьте первый товар.
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Расходы — Korvon{% endblock %}
+{% block nav_expenses %}active{% endblock %}
+
+{% block content %}
+<div class="page-header expense-header">
+    <div>
+        <h1>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Расходы
+        </h1>
+        <div class="page-sub">Учёт расходов бизнеса ({{ expense|length }} шт.)</div>
+    </div>
+    <a href="{% url 'create_expense' %}" class="btn btn-expense">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        Добавить расход
+    </a>
+</div>
+
+<div class="expense-summary">
+    <div class="sum-card">
+        <div class="sum-label">Всего потрачено</div>
+        <div class="sum-value">{{ total_expenses }} <small>сом</small></div>
+    </div>
+    <div class="sum-card">
+        <div class="sum-label">Записей</div>
+        <div class="sum-value">{{ expense|length }} <small>шт.</small></div>
+    </div>
+</div>
+
+<div class="card">
+    {% if expense %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Тип</th>
+                    <th>Название</th>
+                    <th>Цена</th>
+                    <th>Кол-во</th>
+                    <th>Дата</th>
+                    <th>Описание</th>
+                    <th>Итого</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in expense %}
+                <tr>
+                    <td><span class="tag tag-expense">{{ e.get_expense_type_display }}</span></td>
+                    <td><b style="cursor:pointer;"><a href="{% url 'expense_detail' e.id %}" style="color:inherit; text-decoration:none;">{{ e.name }}</a></b></td>
+                    <td class="amount org">{{ e.price }}</td>
+                    <td>{{ e.quantity|default:"—" }}</td>
+                    <td class="muted">{{ e.date }}</td>
+                    <td class="muted">{{ e.description|default:"—" }}</td>
+                    <td class="amount pos">{{ e.total }}</td>
+                    <td>
+                        <div class="row-actions">
+                            <a href="{% url 'update_expense' e.id %}" class="btn btn-ghost btn-sm">Изменить</a>
+                            <a href="{% url 'delete_expense' e.id %}" class="btn btn-danger btn-sm">Удалить</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty">
+        <div class="empty-icon">💸</div>
+        Расходов пока нет. Добавьте первый расход.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

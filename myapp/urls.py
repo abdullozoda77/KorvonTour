@@ -1,0 +1,32 @@
+from django.urls import path
+from .views import *
+
+urlpatterns = [
+    path('', home, name='home'),
+    path('login/', user_login, name='login'),
+    path('register/', register, name='register'),
+    path('logout/', user_logout, name='logout'),
+    path('category/', category_list, name='category_list'),
+    path('category/<int:pk>/', category_detail, name='category_detail'),
+    path('category/create/', create_category, name='create_category'),
+    path('category/update/<int:pk>/', update_category, name='update_category'),
+    path('category/delete/<int:pk>/', delete_category, name='delete_category'),
+    path('country/', country_list, name='country_list'),
+    path('country/<int:pk>/', country_detail, name='country_detail'),
+    path('country/create/', create_country, name='create_country'),
+    path('country/update/<int:pk>/', update_country, name='update_country'),
+    path('country/delete/<int:pk>/', delete_country, name='delete_country'),
+    path('product/', product_list, name='product_list'),
+    path('product/<int:pk>/', product_detail, name='product_detail'),
+    path('product/create/', create_product, name='create_product'),
+    path('product/update/<int:pk>/', update_product, name='update_product'),
+    path('product/delete/<int:pk>/', delete_product, name='delete_product'),
+    path('expense/', expense_list, name='expense_list'),
+    path('expense/<int:pk>/', expense_detail, name='expense_detail'),
+    path('expense/create/', create_expense, name='create_expense'),
+    path('expense/update/<int:pk>/', update_expense, name='update_expense'),
+    path('expense/delete/<int:pk>/', delete_expense, name='delete_expense'),
+    path('purchase/', purchase_list, name='purchase_list'),
+    path('employees/', employees_list, name='employees_list'),
+    path('settings/', settings, name='settings'),
+]

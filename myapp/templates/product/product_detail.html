@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} — Korvon{% endblock %}
+{% block nav_products %}active{% endblock %}
+
+{% block content %}
+<div class="pd-header">
+    <a href="{% url 'purchase_list' %}" class="btn btn-ghost">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        Назад к покупкам
+    </a>
+    <div style="display:flex; gap:8px;">
+        <a href="{% url 'update_product' product.id %}" class="btn btn-ghost">Изменить</a>
+        <a href="{% url 'delete_product' product.id %}" class="btn btn-danger">Удалить</a>
+    </div>
+</div>
+
+<div class="pd-layout">
+    {% if product.photo %}
+    <div class="pd-photo-wrap"><img class="pd-photo" src="{{ product.photo.url }}" alt="{{ product.name }}"></div>
+    {% else %}
+    <div class="pd-photo-wrap"><div class="pd-photo">📦</div></div>
+    {% endif %}
+
+    <div class="pd-info">
+        <div>
+            <div class="pd-code">{{ product.unique_code }}</div>
+            <div class="pd-name">{{ product.name }}</div>
+        </div>
+        <div class="pd-badges">
+            <span class="pd-badge teal">Кол-во: {{ product.quantity }} шт.</span>
+            {% if product.category %}<span class="pd-badge">{{ product.category }}</span>{% endif %}
+            {% if product.country %}<span class="pd-badge">Поставщик: {{ product.country.shop }} ({{ product.country.country_name }})</span>{% endif %}
+        </div>
+        <div class="pd-grid">
+            <div class="pd-box">
+                <div class="pm-label">Харид</div>
+                <div class="pm-value org">{{ product.xarid }} сом</div>
+            </div>
+            <div class="pd-box">
+                <div class="pm-label">Фуруш</div>
+                <div class="pm-value pos">{{ product.furush }} сом</div>
+            </div>
+            <div class="pd-box">
+                <div class="pm-label">На складе</div>
+                <div class="pm-value">{{ product.quantity }} шт.</div>
+            </div>
+        </div>
+        <div>
+            <div class="pd-desc-title">Описание</div>
+            <div class="pd-desc">{{ product.description|default:"Описание не заполнено." }}</div>
+        </div>
+        <div class="pd-dates">
+            Добавлен: {{ product.created_at|date:"d.m.Y H:i" }} · Обновлён: {{ product.updated_at|date:"d.m.Y H:i" }}
+        </div>
+    </div>
+</div>
+{% endblock %}

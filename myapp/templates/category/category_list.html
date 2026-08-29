@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Категории — Korvon{% endblock %}
+{% block nav_categories %}active{% endblock %}
+
+{% block content %}
+<div class="page-header cat-header">
+    <div>
+        <h1>
+            <svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 9h.01M15 9h.01M9 13h.01M15 13h.01"/></svg>
+            Категории
+        </h1>
+        <div class="page-sub">Категории товаров ({{ category|length }} шт.)</div>
+    </div>
+    <a href="{% url 'create_category' %}" class="btn btn-primary">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        Добавить категорию
+    </a>
+</div>
+
+<div class="cat-summary">
+    <div class="sum-card">
+        <div class="sum-label">Категорий</div>
+        <div class="sum-value">{{ category|length }} <small>шт.</small></div>
+    </div>
+</div>
+
+<div class="cat-grid">
+    {% for c in category %}
+    <div class="cat-card">
+        <div class="cat-top">
+            <a href="{% url 'category_detail' c.id %}" style="display:flex; align-items:center; gap:13px; text-decoration:none; color:inherit;">
+                <div class="cat-avatar">🏷️</div>
+                <div>
+                    <div class="cat-name">{{ c.name }}</div>
+                    <div class="cat-count">{{ c.products.count }} товаров</div>
+                </div>
+            </a>
+        </div>
+        <div class="cat-desc">{{ c.description|default:"Нет описания" }}</div>
+        <div class="cat-actions">
+            <a href="{% url 'update_category' c.id %}" class="btn btn-ghost btn-sm">Изменить</a>
+            <a href="{% url 'delete_category' c.id %}" class="btn btn-danger btn-sm">Удалить</a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-cat" style="grid-column: 1 / -1;">
+        <div style="font-size: 34px; margin-bottom: 8px;">🏷️</div>
+        Категорий пока нет. Добавьте первую категорию.
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
