@@ -1,16 +1,13 @@
-from functools import wraps
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.exceptions import PermissionDenied
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from django.core.exceptions import PermissionDenied
-
 from .models import Category, Product, Country, Expense, User
 from .forms import CategoryForm, ProductForm, CountryForm, ExpenseForm, RegisterForm
+from django.contrib.auth.models import Group
+from functools import wraps
+from django.core.exceptions import PermissionDenied
 
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 def viewer_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
@@ -19,53 +16,30 @@ def viewer_required(view_func):
         return view_func(request, *args, **kwargs)
     return wrapper
 
-
-def user_products(request):
-    if request.user.is_authenticated:
-        return Product.objects.filter(user=request.user)
-    return Product.objects.none()
-
-
-def user_expenses(request):
-    if request.user.is_authenticated:
-        return Expense.objects.filter(user=request.user)
-    return Expense.objects.none()
-
-
-# ---------------------------------------------------------------------------
-# Dashboard
-# ---------------------------------------------------------------------------
 def home(request):
-    products = user_products(request)
-    expenses = user_expenses(request)
+    products = Product.objects.all()
     categories = Category.objects.all()
-    total_expenses = sum(float(e.total) for e in expenses)
-    total_stock = sum(p.quantity for p in products)
-
+    expenses = Expense.objects.all()
+    total_expenses = sum(expense.total for expense in expenses)
     context = {
         'products': products,
         'categories': categories,
         'expenses': expenses,
         'total_expenses': total_expenses,
-        'total_stock': total_stock,
     }
 
     return render(request, 'home.html', context)
 
-
-# ---------------------------------------------------------------------------
-# Category
-# ---------------------------------------------------------------------------
 def category_list(request):
     category = Category.objects.all()
     return render(request, 'category/category_list.html', {'category': category})
 
-
 def category_detail(request, pk):
     category = get_object_or_404(Category, pk=pk)
     products = category.products.all()
+    if not request.user.is_superuser:
+        products = products.filter(user=request.user)
     return render(request, 'category/category_detail.html', {'category': category, 'products': products})
-
 
 @viewer_required
 def create_category(request):
@@ -79,7 +53,6 @@ def create_category(request):
         form = CategoryForm()
     return render(request, 'category/create_category.html', {'form': form})
 
-
 @viewer_required
 def update_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
@@ -92,29 +65,24 @@ def update_category(request, pk):
         form = CategoryForm(instance=category)
     return render(request, 'category/update_category.html', {'form': form})
 
-
 @viewer_required
 def delete_category(request, pk):
+    if not request.user.is_superuser:
+        raise PermissionDenied
     category = get_object_or_404(Category, pk=pk)
     if request.method == 'POST':
         category.delete()
         return redirect('category_list')
     return render(request, 'category/delete_category.html', {'category': category})
 
-
-# ---------------------------------------------------------------------------
-# Country
-# ---------------------------------------------------------------------------
 def country_list(request):
     country = Country.objects.all()
     return render(request, 'country/country_list.html', {'country': country})
-
 
 def country_detail(request, pk):
     country = get_object_or_404(Country, pk=pk)
     products = country.products.all()
     return render(request, 'country/country_detail.html', {'country': country, 'products': products})
-
 
 @viewer_required
 def create_country(request):
@@ -128,7 +96,6 @@ def create_country(request):
         form = CountryForm()
     return render(request, 'country/create_country.html', {'form': form})
 
-
 @viewer_required
 def update_country(request, pk):
     country = get_object_or_404(Country, pk=pk)
@@ -141,20 +108,19 @@ def update_country(request, pk):
         form = CountryForm(instance=country)
     return render(request, 'country/update_country.html', {'form': form})
 
-
 @viewer_required
 def delete_country(request, pk):
+    if not request.user.is_superuser:
+        raise PermissionDenied
     country = get_object_or_404(Country, pk=pk)
     if request.method == 'POST':
         country.delete()
         return redirect('country_list')
     return render(request, 'country/delete_country.html', {'country': country})
 
-
-# ---------------------------------------------------------------------------
-# Purchase / Employees
-# ---------------------------------------------------------------------------
 def purchase_list(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
     purchases = Product.objects.all()
     total_spent = sum(p.xarid * p.quantity for p in purchases)
     total_qty = sum(p.quantity for p in purchases)
@@ -164,24 +130,23 @@ def purchase_list(request):
         'total_qty': total_qty,
     })
 
-
 def employees_list(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
     suppliers = Country.objects.all()
     return render(request, 'employees/employees_list.html', {'suppliers': suppliers})
 
-
-# ---------------------------------------------------------------------------
-# Product
-# ---------------------------------------------------------------------------
 def product_list(request):
-    products = user_products(request)
-    return render(request, 'product/product_list.html', {'product': products})
-
+    products = Product.objects.all()
+    if not request.user.is_superuser:
+        products = products.filter(user=request.user)
+    return render(request,'product/product_list.html',{'product': products})
 
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
+    if not request.user.is_superuser and product.user != request.user:
+        raise PermissionDenied
     return render(request, 'product/product_detail.html', {'product': product})
-
 
 @viewer_required
 def create_product(request):
@@ -215,10 +180,11 @@ def create_product(request):
         {'form': form}
     )
 
-
 @viewer_required
 def update_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
+    if not request.user.is_superuser and product.user != request.user:
+        raise PermissionDenied
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
@@ -237,28 +203,28 @@ def update_product(request, pk):
         form = ProductForm(instance=product)
     return render(request, 'product/update_product.html', {'form': form})
 
-
 @viewer_required
 def delete_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
+    if not request.user.is_superuser and product.user != request.user:
+        raise PermissionDenied
     if request.method == 'POST':
         product.delete()
         return redirect('product_list')
     return render(request, 'product/delete_product.html', {'product': product})
 
 def expense_list(request):
-    expenses = user_expenses(request)
-    total_expenses = sum(e.total for e in expenses)
-    return render(request, 'expense/expense_list.html', {
-        'expense': expenses,
-        'total_expenses': total_expenses,
-    })
-
+    expenses = Expense.objects.all()
+    if not request.user.is_superuser:
+        expenses = expenses.filter(user=request.user)
+    total_expenses = sum(expense.total for expense in expenses)
+    return render(request,'expense/expense_list.html',{'expense': expenses,'total_expenses': total_expenses,})
 
 def expense_detail(request, pk):
     expense = get_object_or_404(Expense, pk=pk)
+    if not request.user.is_superuser and expense.user != request.user:
+        raise PermissionDenied
     return render(request, 'expense/expense_detail.html', {'expense': expense})
-
 
 @viewer_required
 def create_expense(request):
@@ -274,10 +240,11 @@ def create_expense(request):
         form = ExpenseForm()
     return render(request, 'expense/create_expense.html', {'form': form})
 
-
 @viewer_required
 def update_expense(request, pk):
     expense = get_object_or_404(Expense, pk=pk)
+    if not request.user.is_superuser and expense.user != request.user:
+        raise PermissionDenied
     if request.method == 'POST':
         form = ExpenseForm(request.POST, instance=expense)
         if form.is_valid():
@@ -287,10 +254,11 @@ def update_expense(request, pk):
         form = ExpenseForm(instance=expense)
     return render(request, 'expense/update_expense.html', {'form': form})
 
-
 @viewer_required
 def delete_expense(request, pk):
     expense = get_object_or_404(Expense, pk=pk)
+    if not request.user.is_superuser and expense.user != request.user:
+        raise PermissionDenied
     if request.method == 'POST':
         expense.delete()
         return redirect('expense_list')
@@ -300,12 +268,13 @@ def register(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save()
+            group = Group.objects.get(name='User')
+            user.groups.add(group)
             return redirect('login')
     else:
         form = RegisterForm()
     return render(request, 'accounts/register.html', {'form': form})
-
 
 def user_login(request):
     if request.method == 'POST':
@@ -322,15 +291,11 @@ def user_login(request):
 
     return render(request, 'accounts/login.html')
 
-
 def user_logout(request):
     logout(request)
     return redirect('login')
 
 
-# ---------------------------------------------------------------------------
-# Settings
-# ---------------------------------------------------------------------------
 def settings(request):
     if request.method == 'POST':
         user = request.user
