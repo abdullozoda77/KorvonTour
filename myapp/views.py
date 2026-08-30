@@ -1,6 +1,8 @@
+from functools import wraps
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 
 from .models import Category, Product, Country, Expense, User
 from .forms import CategoryForm, ProductForm, CountryForm, ExpenseForm, RegisterForm
@@ -9,6 +11,15 @@ from .forms import CategoryForm, ProductForm, CountryForm, ExpenseForm, Register
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+def viewer_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if request.user.groups.filter(name='Viewer').exists():
+            raise PermissionDenied
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
 def user_products(request):
     if request.user.is_authenticated:
         return Product.objects.filter(user=request.user)
@@ -28,13 +39,15 @@ def home(request):
     products = user_products(request)
     expenses = user_expenses(request)
     categories = Category.objects.all()
-    total_expenses = sum(e.total for e in expenses)
+    total_expenses = sum(float(e.total) for e in expenses)
+    total_stock = sum(p.quantity for p in products)
 
     context = {
         'products': products,
         'categories': categories,
         'expenses': expenses,
         'total_expenses': total_expenses,
+        'total_stock': total_stock,
     }
 
     return render(request, 'home.html', context)
@@ -54,6 +67,7 @@ def category_detail(request, pk):
     return render(request, 'category/category_detail.html', {'category': category, 'products': products})
 
 
+@viewer_required
 def create_category(request):
     if request.method == 'POST':
         form = CategoryForm(request.POST)
@@ -66,6 +80,7 @@ def create_category(request):
     return render(request, 'category/create_category.html', {'form': form})
 
 
+@viewer_required
 def update_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if request.method == 'POST':
@@ -78,6 +93,7 @@ def update_category(request, pk):
     return render(request, 'category/update_category.html', {'form': form})
 
 
+@viewer_required
 def delete_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if request.method == 'POST':
@@ -100,6 +116,7 @@ def country_detail(request, pk):
     return render(request, 'country/country_detail.html', {'country': country, 'products': products})
 
 
+@viewer_required
 def create_country(request):
     if request.method == 'POST':
         form = CountryForm(request.POST)
@@ -112,6 +129,7 @@ def create_country(request):
     return render(request, 'country/create_country.html', {'form': form})
 
 
+@viewer_required
 def update_country(request, pk):
     country = get_object_or_404(Country, pk=pk)
     if request.method == 'POST':
@@ -124,6 +142,7 @@ def update_country(request, pk):
     return render(request, 'country/update_country.html', {'form': form})
 
 
+@viewer_required
 def delete_country(request, pk):
     country = get_object_or_404(Country, pk=pk)
     if request.method == 'POST':
@@ -164,6 +183,7 @@ def product_detail(request, pk):
     return render(request, 'product/product_detail.html', {'product': product})
 
 
+@viewer_required
 def create_product(request):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
@@ -196,6 +216,7 @@ def create_product(request):
     )
 
 
+@viewer_required
 def update_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
@@ -217,6 +238,7 @@ def update_product(request, pk):
     return render(request, 'product/update_product.html', {'form': form})
 
 
+@viewer_required
 def delete_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
@@ -238,6 +260,7 @@ def expense_detail(request, pk):
     return render(request, 'expense/expense_detail.html', {'expense': expense})
 
 
+@viewer_required
 def create_expense(request):
     if request.method == 'POST':
         form = ExpenseForm(request.POST)
@@ -252,6 +275,7 @@ def create_expense(request):
     return render(request, 'expense/create_expense.html', {'form': form})
 
 
+@viewer_required
 def update_expense(request, pk):
     expense = get_object_or_404(Expense, pk=pk)
     if request.method == 'POST':
@@ -264,6 +288,7 @@ def update_expense(request, pk):
     return render(request, 'expense/update_expense.html', {'form': form})
 
 
+@viewer_required
 def delete_expense(request, pk):
     expense = get_object_or_404(Expense, pk=pk)
     if request.method == 'POST':

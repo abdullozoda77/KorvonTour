@@ -88,7 +88,7 @@
 
     <!-- WELCOME -->
     <div class="welcome">
-        <h1>Добро пожаловать, Ромин! 👋</h1>
+        <h1>Добро пожаловать{% if user.is_authenticated %}, {{ user.get_full_name|default:user.username }}{% endif %}! 👋</h1>
         <p>Вот что происходит в вашем бизнесе сегодня.</p>
     </div>
 
@@ -107,7 +107,7 @@
                 <svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/></svg>
                 Остаток
             </div>
-            <div class="stat-value">{{ products|length }}</div>
+            <div class="stat-value">{{ total_stock }}</div>
             <div class="stat-sub">Всего единиц</div>
         </div>
         <div class="stat-card stat-orange">
