@@ -1548,6 +1548,11 @@ td .amount.org { color: var(--orange); }
     .topbar { flex-wrap: wrap; margin-bottom: 20px; }
     .stats { grid-template-columns: 1fr; }
     .product-grid { grid-template-columns: 1fr; }
+    .map svg.map-svg {
+        width: 100%;
+        height: 100%;
+        transform: none;
+    }
 }
 
 /* ==== PHONE (small screens) ==== */
@@ -1597,7 +1602,12 @@ td .amount.org { color: var(--orange); }
     .form-actions { flex-wrap: wrap; }
     .form-actions .btn { flex: 1; justify-content: center; }
 
-    .map { height: 280px; }
+    .map { height: 270px; }
+    .map svg.map-svg {
+        width: 100%;
+        height: 100%;
+        transform: none;
+    }
     .map-modal-box { max-height: 92vh; }
     .map-modal-body { height: 60vh; }
 
