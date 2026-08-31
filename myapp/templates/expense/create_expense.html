@@ -79,6 +79,7 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ block.super }}
 <script>
     const expenseType = document.getElementById("id_expense_type");
     const quantityField = document.getElementById("quantity-field");

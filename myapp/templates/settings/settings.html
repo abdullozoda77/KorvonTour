@@ -12,9 +12,16 @@
 
 <div class="card form-card">
     <h3>Профиль</h3>
-    <form method="post" autocomplete="off">
+    <form method="post" autocomplete="off" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-grid">
+            <div class="form-group">
+                <label for="id_image">Фото профиля</label>
+                <input type="file" id="id_image" name="image" accept="image/*">
+                {% if user.profile.image %}
+                <img src="{{ user.profile.image.url }}" alt="Фото профиля" class="avatar-preview" style="margin-top:8px; width:80px; height:80px; border-radius:50%; object-fit:cover;">
+                {% endif %}
+            </div>
             <div class="form-group">
                 <label for="first_name">Имя</label>
                 <input type="text" id="first_name" name="first_name" value="{{ user.first_name }}">

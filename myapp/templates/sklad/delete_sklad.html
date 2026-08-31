@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Удалить склад — Korvon{% endblock %}
+{% block nav_sklads %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Удаление склада</h1>
+        <div class="page-sub">Подтвердите удаление</div>
+    </div>
+</div>
+
+<div class="card confirm-card">
+    <div class="confirm-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+    </div>
+    <h3>Точно удалить?</h3>
+    <p>Вы собираетесь удалить склад <b>«{{ sklad }}»</b> (хозяин: {{ sklad.user.username|default:"—" }}). Это действие нельзя отменить.</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="confirm-actions">
+            <button type="submit" class="btn btn-danger">
+                <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                Удалить
+            </button>
+            <a href="{% url 'sklad_list' %}" class="btn btn-ghost">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

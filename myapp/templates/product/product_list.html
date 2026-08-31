@@ -36,6 +36,9 @@
             <div>
                 <div class="pr-name">{{ p.name }}</div>
                 <div class="pr-code">Код: {{ p.unique_code }}</div>
+                {% if user.is_superuser %}
+                <div class="pr-owner">Добавил: {{ p.user.username|default:"—" }}</div>
+                {% endif %}
             </div>
             <div class="pr-badges">
                 <span class="pr-badge teal">Кол-во: {{ p.quantity }}</span>

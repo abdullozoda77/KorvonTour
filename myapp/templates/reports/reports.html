@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Отчёты — Korvon{% endblock %}
+{% block nav_reports %}active{% endblock %}
+
+{% block content %}
+<div class="page-header expense-header">
+    <div>
+        <h1>
+            <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+            Отчёты
+        </h1>
+        <div class="page-sub">Кто и сколько купил товаров</div>
+    </div>
+</div>
+
+<div class="stats">
+    <div class="stat-card stat-purple">
+        <div class="stat-label">Покупок</div>
+        <div class="stat-value">{{ total_count }}</div>
+        <div class="stat-sub">Всего позиций</div>
+    </div>
+    <div class="stat-card stat-blue">
+        <div class="stat-label">Единиц куплено</div>
+        <div class="stat-value">{{ total_qty }}</div>
+        <div class="stat-sub">Всего товаров</div>
+    </div>
+    <div class="stat-card stat-green">
+        <div class="stat-label">Потрачено</div>
+        <div class="stat-value">{{ total_spent|floatformat:"0" }} сом</div>
+        <div class="stat-sub">Итого</div>
+    </div>
+</div>
+
+<div class="card">
+    {% if report_rows %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Имя</th>
+                    <th>Логин</th>
+                    <th>Куплено (позиций)</th>
+                    <th>Единиц</th>
+                    <th>Потрачено</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in report_rows %}
+                <tr>
+                    <td><b>{{ r.name }}</b></td>
+                    <td class="muted">{{ r.username }}</td>
+                    <td>{{ r.count }}</td>
+                    <td>{{ r.qty }}</td>
+                    <td class="amount pos">{{ r.spent|floatformat:"0" }} сом</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty">
+        <div class="empty-icon">📊</div>
+        Пока нет данных о покупках.
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

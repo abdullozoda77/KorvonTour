@@ -41,6 +41,7 @@
                     <th>Дата</th>
                     <th>Описание</th>
                     <th>Итого</th>
+                    {% if user.is_superuser %}<th>Добавил</th>{% endif %}
                     <th>Действия</th>
                 </tr>
             </thead>
@@ -54,6 +55,7 @@
                     <td class="muted">{{ e.date }}</td>
                     <td class="muted">{{ e.description|default:"—" }}</td>
                     <td class="amount pos">{{ e.total }}</td>
+                    {% if user.is_superuser %}<td class="muted">{{ e.user.username|default:"—" }}</td>{% endif %}
                     <td>
                         <div class="row-actions">
                             <a href="{% url 'update_expense' e.id %}" class="btn btn-ghost btn-sm">Изменить</a>

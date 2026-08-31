@@ -33,6 +33,9 @@
                 <div>
                     <div class="sup-name">{{ c.country_name }}</div>
                     <div class="sup-shop">{{ c.shop|default:"Магазин" }}</div>
+                    {% if user.is_superuser %}
+                    <div class="sup-shop">Добавил: {{ c.user.username|default:"—" }}</div>
+                    {% endif %}
                 </div>
             </a>
         </div>

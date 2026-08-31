@@ -33,6 +33,9 @@
                 <div>
                     <div class="cat-name">{{ c.name }}</div>
                     <div class="cat-count">{{ c.products.count }} товаров</div>
+                    {% if user.is_superuser %}
+                    <div class="cat-count">Добавил: {{ c.user.username|default:"—" }}</div>
+                    {% endif %}
                 </div>
             </a>
         </div>

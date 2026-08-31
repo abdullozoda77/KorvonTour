@@ -8,7 +8,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
+<script>
+(function () {
+    var t = 'korvon-theme';
+    if (localStorage.getItem(t) === 'light') document.documentElement.classList.add('light');
+})();
+</script>
 </head>
 <body>
 
@@ -42,7 +49,7 @@
         <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         Поставщики
     </a>
-    <a href="#" class="nav-item">
+    <a href="{% url 'reports' %}" class="nav-item">
         <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
         Отчёты
     </a>
@@ -67,12 +74,42 @@
         </div>
 
         <div class="topbar-right">
-            <button class="icon-btn" aria-label="Уведомления">
-                <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                <span class="dot"></span>
+            <button type="button" class="theme-btn" aria-label="Переключить тему">
+                <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+                <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
             </button>
+            <div class="notif-wrap">
+            <button type="button" class="icon-btn notif-btn" aria-label="Уведомления">
+                <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </button>
+            <div class="notif-panel" id="notifPanelHome">
+                <div class="notif-head">
+                    <span>Уведомления</span>
+                </div>
+                <div class="notif-list">
+                    {% if not user.is_authenticated %}
+                    <div class="notif-empty">Войдите, чтобы видеть оповещения.</div>
+                    {% elif notifications %}
+                        {% for n in notifications %}
+                        <div class="notif-item">
+                            <span class="notif-qty">{{ n.icon }}</span>
+                            <div class="notif-info">
+                                <div class="notif-name">
+                                    {% if user.is_superuser %}{{ n.owner|default:"Кто-то" }} добавил(а){% else %}Вы добавили{% endif %}
+                                    «{{ n.name }}»
+                                </div>
+                                <div class="notif-sub">{{ n.type }} · {{ n.ts|timesince }} назад</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="notif-empty">Пока нет добавлений. Добавьте что-нибудь на склад.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
             <div class="user">
-                <div class="avatar">{{ user.get_full_name|default:user.username|slice:":1"|default:"Р" }}</div>
+                <div class="avatar">{% if user.is_authenticated and user.profile.image %}<img src="{{ user.profile.image.url }}" alt="Фото" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">{% else %}{{ user.get_full_name|default:user.username|slice:":1"|default:"Р" }}{% endif %}</div>
                 <div class="info">
                     <div class="name">{{ user.get_full_name|default:user.username|default:"Гость" }}</div>
                     <div class="role">{{ user.is_staff|yesno:"Администратор,Менеджер" }}</div>
@@ -89,41 +126,166 @@
     <!-- WELCOME -->
     <div class="welcome">
         <h1>Добро пожаловать{% if user.is_authenticated %}, {{ user.get_full_name|default:user.username }}{% endif %}! 👋</h1>
+        {% if user.is_superuser %}
+        <p>Обзор по всей компании: клиенты, сотрудники и склад.</p>
+        {% else %}
         <p>Вот что происходит в вашем бизнесе сегодня.</p>
+        {% endif %}
     </div>
 
-    <!-- STATS -->
+    <!-- STATS + DONUT -->
+    {% if user.is_superuser %}
+    <div class="stats-donut">
+        <div class="stats stats-6">
+            <div class="stat-card stat-purple">
+                <div class="stat-label">
+                    <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    Товары (все)
+                </div>
+                <div class="stat-value">{{ products|length }}</div>
+                <div class="stat-sub">Всего позиций по компании</div>
+            </div>
+            <div class="stat-card stat-blue">
+                <div class="stat-label">
+                    <svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/></svg>
+                    Остаток (все)
+                </div>
+                <div class="stat-value">{{ total_stock }}</div>
+                <div class="stat-sub">Всего единиц на складе</div>
+            </div>
+            <div class="stat-card stat-green">
+                <div class="stat-label">
+                    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Категории
+                </div>
+                <div class="stat-value">{{ categories|length }}</div>
+                <div class="stat-sub">Всего категорий</div>
+            </div>
+            <div class="stat-card stat-orange">
+                <div class="stat-label">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    Расходы (все)
+                </div>
+                <div class="stat-value">{{ total_expenses }} сом</div>
+                <div class="stat-sub">{{ expenses|length }} записей</div>
+            </div>
+            <div class="stat-card stat-purple">
+                <div class="stat-label">
+                    <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+                    Затраты на товары
+                </div>
+                <div class="stat-value">{{ total_purchase|floatformat:"0" }} сом</div>
+                <div class="stat-sub">Себестоимость (xarid)</div>
+            </div>
+            <div class="stat-card stat-green">
+                <div class="stat-label">
+                    <svg viewBox="0 0 24 24"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    Потенц. выручка
+                </div>
+                <div class="stat-value">{{ total_sale|floatformat:"0" }} сом</div>
+                <div class="stat-sub">Продажная цена (furush)</div>
+            </div>
+        </div>
+    </div>
+
+    {% if home_users %}
+    <div class="card analytics-card">
+        <div class="analytics-head">
+            <span class="analytics-icon">
+                <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+            </span>
+            <div class="analytics-head-text">
+                <h3>Распределение затрат по&nbsp;пользователям</h3>
+                <p class="analytics-sub">Кто и сколько потратил на закупку товаров</p>
+            </div>
+        </div>
+
+        <div class="analytics-body">
+            <div class="analytics-donut">
+                <div class="chart-box">
+                    <canvas id="donutChart"></canvas>
+                    <div class="chart-center">
+                        <div class="chart-center-label">Всего</div>
+                        <div class="chart-center-value">{{ total_purchase|floatformat:"0" }} сом</div>
+                        <div class="chart-center-sub">100% от общих затрат</div>
+                        <svg class="chart-center-icon" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="analytics-users" id="chartLegend"></div>
+        </div>
+
+        <div class="analytics-insight" id="insightCard"></div>
+    </div>
+
+    <script type="application/json" id="home-report-data">
+{% autoescape off %}[
+{% for u in home_users %}{"name": "{{ u.name|escapejs }}", "spent": {{ u.spent }}}{% if not forloop.last %},{% endif %}
+{% endfor %}]
+{% endautoescape %}
+    </script>
+
+    <!-- SKLADI (superuser overview) -->
+    <div class="card">
+        <div class="analytics-head">
+            <span class="analytics-icon">
+                <svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 9h.01M15 9h.01M9 13h.01M15 13h.01"/></svg>
+            </span>
+            <div class="analytics-head-text">
+                <h3>Склады компании</h3>
+                <p class="analytics-sub">Все склады и количество товаров на каждом</p>
+            </div>
+        </div>
+        <div class="skladi-overview">
+            {% for s in skladi %}
+            <div class="sklado">
+                <div class="sklado-icon">🏬</div>
+                <div class="sklado-info">
+                    <div class="sklado-name">{{ s.user.username|default:s.name }}</div>
+                    <div class="sklado-sub">{{ s.address|default:"Адрес не указан" }}</div>
+                </div>
+                <div class="sklado-count">{{ s.user.products.count }}<small> товар(ов)</small></div>
+            </div>
+            {% empty %}
+            <div class="sklado-empty">Складов пока нет.</div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
     <div class="stats">
         <div class="stat-card stat-purple">
-            <div class="stat-label">
-                <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                Товары
+                <div class="stat-label">
+                    <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    Товары
+                </div>
+                <div class="stat-value">{{ products|length }}</div>
+                <div class="stat-sub">Всего товаров</div>
             </div>
-            <div class="stat-value">{{ products|length }}</div>
-            <div class="stat-sub">Всего товаров</div>
-        </div>
-        <div class="stat-card stat-blue">
-            <div class="stat-label">
-                <svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/></svg>
-                Остаток
+            <div class="stat-card stat-blue">
+                <div class="stat-label">
+                    <svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/></svg>
+                    Остаток
+                </div>
+                <div class="stat-value">{{ total_stock }}</div>
+                <div class="stat-sub">Всего единиц</div>
             </div>
-            <div class="stat-value">{{ total_stock }}</div>
-            <div class="stat-sub">Всего единиц</div>
-        </div>
-        <div class="stat-card stat-orange">
-            <div class="stat-label">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                Расходы
+            <div class="stat-card stat-orange">
+                <div class="stat-label">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    Расходы
+                </div>
+                <div class="stat-value">{{ total_expenses }} сом</div>
+                <div class="stat-sub">{{ expenses|length }} записей</div>
             </div>
-            <div class="stat-value">{{ total_expenses }} сом</div>
-            <div class="stat-sub">{{ expenses|length }} записей</div>
-        </div>
+        {% endif %}
     </div>
 
     <!-- WAREHOUSE MAP -->
     <div class="lower">
         <div class="card">
-            <h3>Склад в Душанбе</h3>
+            <h3>Карта складов</h3>
             <div class="map">
                 <svg class="map-svg" viewBox="0 0 1000 719" preserveAspectRatio="xMidYMid meet">
                     <!-- graticule -->
@@ -150,30 +312,67 @@
                     <!-- Dushanbe (capital region) -->
                     <path d="M215.4 404.3l1.3-0.1-0.2 1.8 1.2 0.6 2.1 0.5 0.7 1.9 2 0.5-1.4 2.1-0.7 2-3.5 1.4-3.2 2.9 0.2 2.5-0.2 1.5-2.2 0.5-2.2 0.2-2.2-1.6-0.3-3.2 0.2-2.2-1.2-1.8 0.8-1.8-0.8-1.7-2.6 1.1-0.7-0.8 3-2.2-1.1-2.6 0.4-1.4 2.6-0.8 3-1.5 0.7-1.7-0.5-2.8 0.2-2.1 0.4-1.1 1 1 0.8 2.3 1.2 2.1 0.8 2.2 0.4 2.3z" fill="rgba(139,92,246,0.28)" stroke="rgba(139,92,246,0.55)" stroke-width="1.2"/>
 
-                    <!-- warehouse marker: Dushanbe ~ (212,410) -->
-                    <g transform="translate(212,410)">
-                        <circle r="30" fill="rgba(139,92,246,0.25)">
+                    <!-- sklad markers by city: superuser sees all, user sees own -->
+                    {% for c in city_groups %}
+                    <g class="sklad-pin" data-lat="{{ c.lat }}" data-lng="{{ c.lng }}" data-city="{{ c.city }}" data-count="{{ c.sklads|length }}" transform="translate({{ c.map_x }},{{ c.map_y }})">
+                        <circle class="dushanbe-halo" r="30" fill="rgba(139,92,246,0.25)">
                             <animate attributeName="r" values="10;40;10" dur="2.5s" repeatCount="indefinite"/>
                             <animate attributeName="opacity" values="0.7;0;0.7" dur="2.5s" repeatCount="indefinite"/>
                         </circle>
-                        <circle r="11" fill="#8b5cf6" stroke="#fff" stroke-width="3"/>
+                        <circle class="dushanbe-dot" cx="0" cy="0" r="11" fill="#8b5cf6" stroke="#fff" stroke-width="3"/>
+                        <text x="0" y="-30" text-anchor="middle" fill="#b794f6" font-size="19" font-weight="700" class="dushanbe-text">{{ c.city }}</text>
                     </g>
-                    <text x="206" y="382" fill="#b794f6" font-size="20" font-weight="700">Душанбе</text>
+                    {% endfor %}
                 </svg>
 
-                <div class="skladi">
-                    <span class="skladi-city">Душанбе</span>
-                    <span class="skladi-count">{{ products|length }}<small> товар(ов)</small></span>
+                {% if city_groups %}
+                <div class="skladi-list">
+                    {% for c in city_groups %}
+                    <button type="button" class="skladi" data-lat="{{ c.lat }}" data-lng="{{ c.lng }}" data-city="{{ c.city }}">
+                        <div class="skladi-main">
+                            <span class="skladi-city">{{ c.city }}</span>
+                            <span class="skladi-addr">{{ c.sklads|length }} склад(а)</span>
+                        </div>
+                        <span class="skladi-count">{{ c.sklads|length }}<small> шт.</small></span>
+                    </button>
+                    {% endfor %}
                 </div>
+                {% else %}
+                <div class="skladi-list"><div class="skladi-empty">Складов пока нет</div></div>
+                {% endif %}
             </div>
         </div>
+    </div>
 
+    <script type="application/json" id="city-sklads-data">
+{% autoescape off %}[
+{% for c in city_groups %}{"city": "{{ c.city|escapejs }}", "lat": {{ c.lat }}, "lng": {{ c.lng }}, "sklads": [{% for s in c.sklads %}{"user": "{{ s.user|escapejs }}", "name": "{{ s.name|escapejs }}", "address": "{{ s.address|escapejs }}", "lat": {{ s.lat }}, "lng": {{ s.lng }}}{% if not forloop.last %},{% endif %}{% endfor %}]}{% if not forloop.last %},{% endif %}
+{% endfor %}]
+{% endautoescape %}
+    </script>
+
+    <!-- KORVON MODAL -->
+    <div class="map-modal" id="mapModal" aria-hidden="true">
+        <div class="map-modal-backdrop" id="mapModalBackdrop"></div>
+        <div class="map-modal-box">
+            <div class="map-modal-head">
+                <div>
+                    <div class="map-modal-title" id="mapModalTitle">Склад</div>
+                    <div class="map-modal-sub" id="mapModalSub">Выберите склад на карте</div>
+                </div>
+                <button type="button" class="map-modal-close" id="mapModalClose" aria-label="Закрыть">&times;</button>
+            </div>
+            <div class="map-modal-body" id="mapModalBody">
+                <div class="city-sklads-list" id="citySkladsList"></div>
+                <div class="map-view" id="mapView" style="display:none;"><div id="map"></div></div>
+            </div>
+        </div>
     </div>
 
     <!-- PRODUCTS + EXPENSES -->
     <div class="bottom">
         <div class="card">
-            <h3>Мои товары</h3>
+            <h3>{% if user.is_superuser %}Товары компании{% else %}Мои товары{% endif %}</h3>
             {% if products %}
             <div class="product-grid">
                 {% for product in products %}
@@ -219,6 +418,268 @@
     </div>
 
 </main>
+
+{% if user.is_superuser and home_users %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    var raw = JSON.parse(document.getElementById('home-report-data').textContent);
+    var data = raw.map(function (r) { return { name: r.name, spent: Number(r.spent) || 0 }; });
+
+    var palette = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1', '#14b8a6', '#a855f7'];
+    var total = data.reduce(function (s, r) { return s + r.spent; }, 0);
+
+    var labels = data.map(function (r) { return r.name; });
+    var values = data.map(function (r) { return r.spent; });
+    var colors = data.map(function (_, i) { return palette[i % palette.length]; });
+
+    var ctx = document.getElementById('donutChart').getContext('2d');
+
+    var chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: colors,
+                borderColor: '#1e2430',
+                borderWidth: 3,
+                hoverOffset: 14,
+                hoverBorderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '72%',
+            animation: {
+                animateRotate: true,
+                animateScale: true
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: '#171c26',
+                    titleColor: '#e5e7eb',
+                    bodyColor: '#cbd5e1',
+                    borderColor: 'rgba(139,92,246,0.4)',
+                    borderWidth: 1,
+                    padding: 12,
+                    cornerRadius: 10,
+                    displayColors: true,
+                    callbacks: {
+                        label: function (ctx) {
+                            var val = ctx.parsed || 0;
+                            var pct = total > 0 ? (val / total * 100) : 0;
+                            return ' ' + ctx.label + ': ' + val.toFixed(0) + ' сом (' + pct.toFixed(1) + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    var legendEl = document.getElementById('chartLegend');
+    data.forEach(function (r, i) {
+        var pct = total > 0 ? (r.spent / total * 100) : 0;
+        var row = document.createElement('div');
+        row.className = 'legend-row' + (i === 0 ? ' top' : '');
+        row.innerHTML =
+            '<span class="a-swatch" style="background:' + colors[i] + '; box-shadow:0 0 0 4px ' + colors[i] + '22;"></span>' +
+            '<div class="a-info">' +
+                '<div class="a-name-row">' +
+                    '<span class="a-name">' + r.name + '</span>' +
+                    '<span class="a-pct-badge" style="background:' + colors[i] + '1a; color:' + colors[i] + ';">' + pct.toFixed(1) + '%</span>' +
+                '</div>' +
+                '<div class="a-amount">' + r.spent.toFixed(0) + ' сом</div>' +
+                '<div class="a-bar"><span class="a-bar-fill" style="width:0%; background:linear-gradient(90deg,' + colors[i] + ', ' + colors[i] + '88);"></span></div>' +
+            '</div>';
+        legendEl.appendChild(row);
+
+        row.addEventListener('mouseenter', function () {
+            chart.setActiveElements([{ datasetIndex: 0, index: i }]);
+            chart.update();
+            legendEl.querySelectorAll('.legend-row').forEach(function (el) { el.classList.remove('active'); });
+            row.classList.add('active');
+        });
+        row.addEventListener('mouseleave', function () {
+            chart.setActiveElements([]);
+            chart.update();
+            legendEl.querySelectorAll('.legend-row').forEach(function (el) { el.classList.remove('active'); });
+        });
+    });
+
+    var top = data[0];
+    var topPct = total > 0 ? (top.spent / total * 100) : 0;
+    var insight = document.getElementById('insightCard');
+    if (top) {
+        insight.innerHTML =
+            '<svg class="insight-icon" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>' +
+            '<div class="insight-text">' +
+                '<span class="insight-title">Крупнейший вклад</span>' +
+                '<span class="insight-desc"><b>' + top.name + '</b> лидирует по затратам — <b>' + topPct.toFixed(1) + '%</b> от всех расходов на товары.</span>' +
+            '</div>';
+    }
+
+    requestAnimationFrame(function () {
+        legendEl.querySelectorAll('.a-bar-fill').forEach(function (bar, i) {
+            var pct = total > 0 ? (data[i].spent / total * 100) : 0;
+            bar.style.width = pct.toFixed(1) + '%';
+        });
+    });
+})();
+</script>
+{% endif %}
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+    var modal = document.getElementById('mapModal');
+    var backdrop = document.getElementById('mapModalBackdrop');
+    var closeBtn = document.getElementById('mapModalClose');
+    var titleEl = document.getElementById('mapModalTitle');
+    var subEl = document.getElementById('mapModalSub');
+    var mapBox = document.getElementById('map');
+    var map = null;
+    var marker = null;
+
+    var cityData = [];
+    try {
+        cityData = JSON.parse(document.getElementById('city-sklads-data').textContent);
+    } catch (e) { cityData = []; }
+
+    function findCity(city) {
+        for (var i = 0; i < cityData.length; i++) {
+            if (cityData[i].city === city) return cityData[i];
+        }
+        return null;
+    }
+
+    function showCityList(city) {
+        var body = document.getElementById('mapModalBody');
+        var listEl = document.getElementById('citySkladsList');
+        var mapView = document.getElementById('mapView');
+        if (titleEl) titleEl.textContent = city.city;
+        if (subEl) subEl.textContent = city.sklads.length + ' склад(а) в этом городе — выберите';
+        listEl.innerHTML = '';
+        city.sklads.forEach(function (s) {
+            var row = document.createElement('button');
+            row.type = 'button';
+            row.className = 'city-sklad-row';
+            row.innerHTML = '<div><b>' + (s.user || 'Менеджер') + '</b>'
+                + (s.name ? '<span class="city-sklad-name">' + s.name + '</span>' : '')
+                + '</div><span class="city-sklad-addr">' + (s.address || 'Адрес не указан') + '</span>';
+            row.addEventListener('click', function () {
+                showSkladMap(s, city);
+            });
+            listEl.appendChild(row);
+        });
+        listEl.style.display = 'block';
+        mapView.style.display = 'none';
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function showSkladMap(s, city) {
+        var listEl = document.getElementById('citySkladsList');
+        var mapView = document.getElementById('mapView');
+        var lat = s.lat || city.lat || 38.5598;
+        var lng = s.lng || city.lng || 68.7870;
+        if (titleEl) titleEl.textContent = s.user || city.city;
+        if (subEl) subEl.textContent = (s.address || 'Адрес не указан');
+        listEl.style.display = 'none';
+        mapView.style.display = 'block';
+
+        setTimeout(function () {
+            if (map === null) {
+                map = L.map('map', { zoomControl: true }).setView([lat, lng], 14);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                    subdomains: 'abcd',
+                    maxZoom: 19
+                }).addTo(map);
+            } else {
+                map.setView([lat, lng], 14);
+            }
+
+            if (marker === null) {
+                var icon = L.divIcon({
+                    className: 'korvon-marker',
+                    html: '<div class="korvon-pin"></div>',
+                    iconSize: [22, 22],
+                    iconAnchor: [11, 11]
+                });
+                marker = L.marker([lat, lng], { icon: icon }).addTo(map);
+            } else {
+                marker.setLatLng([lat, lng]);
+            }
+            marker.setPopupContent('<b>' + (s.user || 'Менеджер') + '</b><br>' + (s.address || 'Адрес не указан'));
+            marker.openPopup();
+            map.invalidateSize();
+        }, 50);
+    }
+
+    function closeModal() {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    function openCityFrom(el) {
+        var cityName = el.getAttribute('data-city');
+        var city = findCity(cityName);
+        if (!city) return;
+        showCityList(city);
+    }
+
+    function triggerFromPin(pin) {
+        if (pin.classList) {
+            pin.classList.add('boom');
+            var self = pin;
+            setTimeout(function () { if (self.classList) self.classList.remove('boom'); }, 700);
+        }
+        setTimeout(function () { openCityFrom(pin); }, 350);
+    }
+
+    if (backdrop) backdrop.addEventListener('click', closeModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+    document.querySelectorAll('.sklad-pin').forEach(function (pin) {
+        pin.addEventListener('click', function () { triggerFromPin(pin); });
+    });
+    document.querySelectorAll('.skladi').forEach(function (btn) {
+        btn.addEventListener('click', function () { openCityFrom(btn); });
+    });
+})();
+</script>
+
+<script>
+document.querySelector('.theme-btn').addEventListener('click', function (e) {
+    var root = document.documentElement;
+    var isLight = root.classList.toggle('light');
+    localStorage.setItem('korvon-theme', isLight ? 'light' : 'dark');
+    e.stopPropagation();
+});
+document.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('.notif-btn') : null;
+    if (btn) {
+        var wrap = btn.closest('.notif-wrap');
+        var open = wrap.classList.contains('open');
+        document.querySelectorAll('.notif-wrap.open').forEach(function (w) { w.classList.remove('open'); });
+        if (!open) wrap.classList.add('open');
+        e.stopPropagation();
+        return;
+    }
+    if (e.target.closest('.notif-panel')) return;
+    document.querySelectorAll('.notif-wrap.open').forEach(function (w) { w.classList.remove('open'); });
+});
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') document.querySelectorAll('.notif-wrap.open').forEach(function (w) { w.classList.remove('open'); });
+});
+</script>
 
 </body>
 </html>

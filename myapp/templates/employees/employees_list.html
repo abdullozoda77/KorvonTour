@@ -32,6 +32,9 @@
             <div>
                 <div class="emp-name">{{ s.country_name }}</div>
                 <div class="emp-shop">{{ s.shop|default:"Магазин" }}</div>
+                {% if user.is_superuser %}
+                <div class="emp-shop">Добавил: {{ s.user.username|default:"—" }}</div>
+                {% endif %}
             </div>
         </div>
         <div class="emp-details">

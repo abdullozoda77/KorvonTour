@@ -1,9 +1,28 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    bio = models.TextField(blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+    image = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    last_notifications_seen = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.user.username
 
 class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
     description = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='categories', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'name'], name='unique_category_per_user', nulls_distinct=True),
+        ]
 
     def __str__(self):
         return self.name
@@ -14,10 +33,46 @@ class Country(models.Model):
     phone = models.CharField(max_length=20)
     address = models.CharField(max_length=255)
     description = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='countries', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'{self.country_name} - {self.shop}'
-    
+
+class Sklad(models.Model):
+    CITY_COORDS = {
+        'Душанбе': {'map_x': 212, 'map_y': 410, 'lat': 38.5598, 'lng': 68.7870},
+        'Худжанд': {'map_x': 620, 'map_y': 160, 'lat': 40.2900, 'lng': 69.6220},
+        'Курган-Тюбе': {'map_x': 430, 'map_y': 575, 'lat': 37.8365, 'lng': 68.7800},
+        'Куляб': {'map_x': 640, 'map_y': 548, 'lat': 37.9146, 'lng': 69.7820},
+        'Хорог': {'map_x': 700, 'map_y': 480, 'lat': 37.4910, 'lng': 71.5570},
+        'РРП': {'map_x': 300, 'map_y': 350, 'lat': 38.8600, 'lng': 69.3300},
+        'Истаравшан': {'map_x': 540, 'map_y': 200, 'lat': 39.9107, 'lng': 69.0068},
+    }
+
+    name = models.CharField(max_length=200, verbose_name='Название склада')
+    city = models.CharField(max_length=100, blank=True, default='', verbose_name='Город')
+    address = models.CharField(max_length=255, blank=True, default='', verbose_name='Адрес')
+    phone = models.CharField(max_length=20, blank=True, default='', verbose_name='Телефон')
+    description = models.TextField(blank=True, default='', verbose_name='Описание')
+    map_x = models.IntegerField(default=0, blank=True, verbose_name='Позиция на карте (X)')
+    map_y = models.IntegerField(default=0, blank=True, verbose_name='Позиция на карте (Y)')
+    lat = models.FloatField(default=0, blank=True, verbose_name='Широта')
+    lng = models.FloatField(default=0, blank=True, verbose_name='Долгота')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sklads', null=True, blank=True, verbose_name='Хозяин склада')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def set_city_coords(self):
+        coords = self.CITY_COORDS.get(self.city)
+        if coords:
+            self.map_x = coords['map_x']
+            self.map_y = coords['map_y']
+            self.lat = coords['lat']
+            self.lng = coords['lng']
+
+    def __str__(self):
+        return self.name
+
 class Product(models.Model):
     name = models.CharField(max_length=200)
     photo = models.ImageField(upload_to='products/', blank=True, null=True)
@@ -51,6 +106,7 @@ class Expense(models.Model):
     description = models.TextField()
     product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True, related_name='expenses')
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='expenses')
+    created_at = models.DateTimeField(auto_now_add=True)
 
     @property
     def total(self):
@@ -60,3 +116,5 @@ class Expense(models.Model):
     
     def __str__(self):
         return f'{self.name} - {self.total}'
+
+import myapp.signals
