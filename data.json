@@ -1,0 +1,344 @@
+[
+{
+  "model": "auth.group",
+  "fields": {
+    "name": "User",
+    "permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$t7tkIfUm47PTY7pWjqcmrI$xN9UdpZaXstukVcCdPhdV/NY3NXSya/rW2DmsX9hbHg=",
+    "last_login": "2026-08-31T09:08:22.779Z",
+    "is_superuser": true,
+    "username": "abdullozoda7",
+    "first_name": "",
+    "last_name": "",
+    "email": "marufromin2007@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-08-29T12:55:14.359Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$EMlfB5SffJWlkdWH6DRZFk$kHZAsFx/yYjcbWMyXBdyykDpCsKcmdw0QvzBRdxuvJE=",
+    "last_login": "2026-08-31T08:23:26.140Z",
+    "is_superuser": false,
+    "username": "roma",
+    "first_name": "",
+    "last_name": "",
+    "email": "marufromin2007@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-30T18:12:20.287Z",
+    "groups": [
+      [
+        "User"
+      ]
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$dwm2OluWAmU1153RZ6LUUs$QMSYGCsoKRAyiW/7XDol3D/PIBYHyu99EBXzqZeWZd4=",
+    "last_login": "2026-08-31T08:34:20.943Z",
+    "is_superuser": false,
+    "username": "romin",
+    "first_name": "",
+    "last_name": "",
+    "email": "marufromin2007@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-31T08:34:09.108Z",
+    "groups": [
+      [
+        "User"
+      ]
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "myapp.profile",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "abdullozoda7"
+    ],
+    "bio": "",
+    "phone": "",
+    "image": "profiles/photo_2026-01-15_08-46-15.jpg",
+    "last_notifications_seen": null
+  }
+},
+{
+  "model": "myapp.profile",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "roma"
+    ],
+    "bio": "",
+    "phone": "",
+    "image": "profiles/photo_2026-01-12_16-53-07.jpg",
+    "last_notifications_seen": "2026-08-31T08:14:32.585Z"
+  }
+},
+{
+  "model": "myapp.profile",
+  "pk": 26,
+  "fields": {
+    "user": [
+      "romin"
+    ],
+    "bio": "",
+    "phone": "",
+    "image": "",
+    "last_notifications_seen": null
+  }
+},
+{
+  "model": "myapp.category",
+  "pk": 7,
+  "fields": {
+    "name": "muzhskoy",
+    "description": "good",
+    "user": [
+      "roma"
+    ],
+    "created_at": "2025-01-01T00:00:00Z"
+  }
+},
+{
+  "model": "myapp.category",
+  "pk": 13,
+  "fields": {
+    "name": "zhenskoy",
+    "description": "good",
+    "user": [
+      "romin"
+    ],
+    "created_at": "2026-08-31T08:38:49.345Z"
+  }
+},
+{
+  "model": "myapp.country",
+  "pk": 2,
+  "fields": {
+    "country_name": "Uzbekistan",
+    "shop": "Libos",
+    "phone": "+992005051206",
+    "address": "Dushanbe Shohmansur district street 170/2 room 19Dushanbe 734000",
+    "description": "good shop",
+    "user": [
+      "roma"
+    ],
+    "created_at": "2025-01-01T00:00:00Z"
+  }
+},
+{
+  "model": "myapp.country",
+  "pk": 3,
+  "fields": {
+    "country_name": "Tajikistan",
+    "shop": "Корвон Панҷ",
+    "phone": "+992900000000",
+    "address": "Панҷ (Ноҳияи Панҷ), Хатлон, Таджикистан",
+    "description": "Склад в Пянджском районе",
+    "user": [
+      "abdullozoda7"
+    ],
+    "created_at": "2025-01-01T00:00:00Z"
+  }
+},
+{
+  "model": "myapp.country",
+  "pk": 4,
+  "fields": {
+    "country_name": "Kirgizistan",
+    "shop": "Zan",
+    "phone": "+992005051206",
+    "address": "Bishkek",
+    "description": "good",
+    "user": [
+      "romin"
+    ],
+    "created_at": "2026-08-31T08:39:45.127Z"
+  }
+},
+{
+  "model": "myapp.sklad",
+  "pk": 1,
+  "fields": {
+    "name": "Dushanbe",
+    "city": "Душанбе",
+    "address": "Dushanbe Shohmansur district street 170/2 room 19Dushanbe 734000",
+    "phone": "+992005051206",
+    "description": "good shop",
+    "map_x": 212,
+    "map_y": 410,
+    "lat": 38.5598,
+    "lng": 68.787,
+    "user": [
+      "roma"
+    ],
+    "created_at": "2025-01-01T00:00:00Z"
+  }
+},
+{
+  "model": "myapp.sklad",
+  "pk": 2,
+  "fields": {
+    "name": "Панҷ",
+    "city": "",
+    "address": "Панҷ (Ноҳияи Панҷ), Хатлон, Таджикистан",
+    "phone": "+992900000000",
+    "description": "Склад в Пянджском районе",
+    "map_x": 180,
+    "map_y": 610,
+    "lat": 37.235,
+    "lng": 69.115,
+    "user": [
+      "abdullozoda7"
+    ],
+    "created_at": "2025-01-01T00:00:00Z"
+  }
+},
+{
+  "model": "myapp.sklad",
+  "pk": 3,
+  "fields": {
+    "name": "Dushanbe",
+    "city": "Душанбе",
+    "address": "Dushanbe",
+    "phone": "+992005051206",
+    "description": "Big sklad",
+    "map_x": 212,
+    "map_y": 410,
+    "lat": 38.5598,
+    "lng": 68.787,
+    "user": [
+      "romin"
+    ],
+    "created_at": "2026-08-31T08:47:12.682Z"
+  }
+},
+{
+  "model": "myapp.product",
+  "pk": 5,
+  "fields": {
+    "name": "Futbolka",
+    "photo": "",
+    "unique_code": "1",
+    "xarid": "10.00",
+    "furush": "50.00",
+    "quantity": 100,
+    "description": "good",
+    "created_at": "2026-08-30T18:47:12.458Z",
+    "updated_at": "2026-08-30T19:28:22.124Z",
+    "category": 7,
+    "country": 2,
+    "user": [
+      "roma"
+    ]
+  }
+},
+{
+  "model": "myapp.product",
+  "pk": 17,
+  "fields": {
+    "name": "Cap",
+    "photo": "",
+    "unique_code": "2",
+    "xarid": "30.00",
+    "furush": "100.00",
+    "quantity": 50,
+    "description": "kepka",
+    "created_at": "2026-08-31T08:24:16.179Z",
+    "updated_at": "2026-08-31T08:24:16.179Z",
+    "category": 7,
+    "country": 2,
+    "user": [
+      "roma"
+    ]
+  }
+},
+{
+  "model": "myapp.product",
+  "pk": 18,
+  "fields": {
+    "name": "Bryuk",
+    "photo": "",
+    "unique_code": "3",
+    "xarid": "20.00",
+    "furush": "100.00",
+    "quantity": 100,
+    "description": "good",
+    "created_at": "2026-08-31T08:51:05.643Z",
+    "updated_at": "2026-08-31T08:51:05.644Z",
+    "category": 13,
+    "country": 4,
+    "user": [
+      "romin"
+    ]
+  }
+},
+{
+  "model": "myapp.expense",
+  "pk": 4,
+  "fields": {
+    "expense_type": "products",
+    "name": "Хариди Futbolka",
+    "price": "10.00",
+    "quantity": 100,
+    "date": "2026-08-30",
+    "description": "Хариди 100 дона Futbolka",
+    "product": 5,
+    "user": [
+      "roma"
+    ],
+    "created_at": "2025-01-01T00:00:00Z"
+  }
+},
+{
+  "model": "myapp.expense",
+  "pk": 6,
+  "fields": {
+    "expense_type": "products",
+    "name": "Хариди Cap",
+    "price": "30.00",
+    "quantity": 50,
+    "date": "2026-08-31",
+    "description": "Хариди 50 дона Cap",
+    "product": 17,
+    "user": [
+      "roma"
+    ],
+    "created_at": "2026-08-31T08:24:16.188Z"
+  }
+},
+{
+  "model": "myapp.expense",
+  "pk": 7,
+  "fields": {
+    "expense_type": "products",
+    "name": "Хариди Bryuk",
+    "price": "20.00",
+    "quantity": 100,
+    "date": "2026-08-31",
+    "description": "Хариди 100 дона Bryuk",
+    "product": 18,
+    "user": [
+      "romin"
+    ],
+    "created_at": "2026-08-31T08:51:05.650Z"
+  }
+}
+]
