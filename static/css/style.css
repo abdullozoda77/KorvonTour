@@ -66,9 +66,21 @@ body {
 html.sidebar-collapsed .sidebar { width: 64px; }
 html.sidebar-collapsed .main { margin-left: 64px; }
 html.sidebar-collapsed .sidebar-toggle { left: 48px; transform: rotate(180deg); }
-.brand-mark-icon { display: none; width: 38px; }
+.brand-mark-mini {
+    display: none;
+    font-family: 'Inter', system-ui, Arial, sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    line-height: 1;
+    background: linear-gradient(180deg, #fdf3cf, #f2d27a 30%, #c9962e 55%, #8a6a1f 78%, #e9c463);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
 html.sidebar-collapsed .brand-mark-full { display: none; }
-html.sidebar-collapsed .brand-mark-icon { display: block; margin: 0 auto; }
+html.sidebar-collapsed .brand-mark-mini { display: block; }
 html.sidebar-collapsed .nav-item {
     width: 44px;
     padding: 10px 2px;
