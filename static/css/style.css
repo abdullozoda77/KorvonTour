@@ -511,8 +511,26 @@ html.sidebar-collapsed .nav-item svg { margin: 0 auto; }
 .welcome { margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .welcome h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
 .welcome p { color: var(--muted); font-size: 14px; }
-.hero-3d { width: 120px; height: 120px; flex-shrink: 0; }
-.hero-3d canvas { display: block; }
+.hero-3d {
+    width: 120px;
+    height: 120px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 800px;
+}
+.hero-3d-logo {
+    width: 92px;
+    height: auto;
+    transform-style: preserve-3d;
+    filter: drop-shadow(0 10px 22px rgba(139,92,246,0.5));
+    animation: hero-logo-spin 7s linear infinite;
+}
+@keyframes hero-logo-spin {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+}
 @media (max-width: 768px) { .hero-3d { display: none; } }
 
 /* STATS */
