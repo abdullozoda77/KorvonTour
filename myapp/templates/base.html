@@ -161,6 +161,18 @@ if (sidebarToggleBtn) {
         localStorage.setItem('korvon-sidebar-collapsed', collapsed ? '1' : '0');
     });
 }
+(function () {
+    var maxTilt = 8;
+    document.querySelectorAll('.stat-card, .pr-card').forEach(function (el) {
+        el.addEventListener('mousemove', function (e) {
+            var r = el.getBoundingClientRect();
+            var x = (e.clientX - r.left) / r.width - 0.5;
+            var y = (e.clientY - r.top) / r.height - 0.5;
+            el.style.transform = 'perspective(700px) rotateY(' + (x * maxTilt).toFixed(2) + 'deg) rotateX(' + (-y * maxTilt).toFixed(2) + 'deg) translateY(-4px)';
+        });
+        el.addEventListener('mouseleave', function () { el.style.transform = ''; });
+    });
+})();
 document.addEventListener('click', function (e) {
     var btn = e.target.closest ? e.target.closest('.notif-btn') : null;
     if (btn) {

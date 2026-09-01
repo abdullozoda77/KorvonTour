@@ -508,9 +508,12 @@ html.sidebar-collapsed .nav-item svg { margin: 0 auto; }
 .user .info .role { font-size: 12px; color: var(--muted); }
 
 /* WELCOME */
-.welcome { margin-bottom: 24px; }
+.welcome { margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .welcome h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
 .welcome p { color: var(--muted); font-size: 14px; }
+.hero-3d { width: 120px; height: 120px; flex-shrink: 0; }
+.hero-3d canvas { display: block; }
+@media (max-width: 768px) { .hero-3d { display: none; } }
 
 /* STATS */
 .stats {

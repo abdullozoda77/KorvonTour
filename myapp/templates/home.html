@@ -142,12 +142,15 @@
 
     <!-- WELCOME -->
     <div class="welcome">
-        <h1>Добро пожаловать{% if user.is_authenticated %}, {{ user.get_full_name|default:user.username }}{% endif %}! 👋</h1>
-        {% if user.is_superuser %}
-        <p>Обзор по всей компании: клиенты, сотрудники и склад.</p>
-        {% else %}
-        <p>Вот что происходит в вашем бизнесе сегодня.</p>
-        {% endif %}
+        <div>
+            <h1>Добро пожаловать{% if user.is_authenticated %}, {{ user.get_full_name|default:user.username }}{% endif %}! 👋</h1>
+            {% if user.is_superuser %}
+            <p>Обзор по всей компании: клиенты, сотрудники и склад.</p>
+            {% else %}
+            <p>Вот что происходит в вашем бизнесе сегодня.</p>
+            {% endif %}
+        </div>
+        <div class="hero-3d" id="hero3d"></div>
     </div>
 
     <!-- STATS + DONUT -->
@@ -609,6 +612,65 @@
 </script>
 {% endif %}
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+    var container = document.getElementById('hero3d');
+    if (!container || typeof THREE === 'undefined') return;
+    var w = container.clientWidth, h = container.clientHeight;
+    if (!w || !h) return;
+
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+    camera.position.set(2.4, 2, 2.8);
+    camera.lookAt(0, 0, 0);
+
+    var renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(w, h);
+    renderer.setPixelRatio(window.devicePixelRatio || 1);
+    container.appendChild(renderer.domElement);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    var dir1 = new THREE.DirectionalLight(0xffffff, 1.1);
+    dir1.position.set(3, 5, 2);
+    scene.add(dir1);
+    var dir2 = new THREE.DirectionalLight(0x8b5cf6, 0.6);
+    dir2.position.set(-3, -2, -2);
+    scene.add(dir2);
+
+    var geometry = new THREE.BoxGeometry(1.4, 1.4, 1.4);
+    var materials = [
+        new THREE.MeshStandardMaterial({ color: 0x7c3aed, roughness: 0.35, metalness: 0.2 }),
+        new THREE.MeshStandardMaterial({ color: 0x6d28d9, roughness: 0.35, metalness: 0.2 }),
+        new THREE.MeshStandardMaterial({ color: 0xa78bfa, roughness: 0.3, metalness: 0.2 }),
+        new THREE.MeshStandardMaterial({ color: 0x4c1d95, roughness: 0.4, metalness: 0.2 }),
+        new THREE.MeshStandardMaterial({ color: 0x8b5cf6, roughness: 0.35, metalness: 0.25 }),
+        new THREE.MeshStandardMaterial({ color: 0x5b21b6, roughness: 0.35, metalness: 0.2 }),
+    ];
+    var box = new THREE.Mesh(geometry, materials);
+    scene.add(box);
+
+    var edges = new THREE.EdgesGeometry(geometry);
+    var line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25 }));
+    box.add(line);
+
+    function animate() {
+        requestAnimationFrame(animate);
+        box.rotation.y += 0.008;
+        box.rotation.x = Math.sin(Date.now() * 0.0006) * 0.15;
+        renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', function () {
+        var nw = container.clientWidth, nh = container.clientHeight;
+        if (!nw || !nh) return;
+        camera.aspect = nw / nh;
+        camera.updateProjectionMatrix();
+        renderer.setSize(nw, nh);
+    });
+})();
+</script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (function () {
@@ -747,6 +809,18 @@ if (sidebarToggleBtn) {
         localStorage.setItem('korvon-sidebar-collapsed', collapsed ? '1' : '0');
     });
 }
+(function () {
+    var maxTilt = 8;
+    document.querySelectorAll('.stat-card, .product-item').forEach(function (el) {
+        el.addEventListener('mousemove', function (e) {
+            var r = el.getBoundingClientRect();
+            var x = (e.clientX - r.left) / r.width - 0.5;
+            var y = (e.clientY - r.top) / r.height - 0.5;
+            el.style.transform = 'perspective(700px) rotateY(' + (x * maxTilt).toFixed(2) + 'deg) rotateX(' + (-y * maxTilt).toFixed(2) + 'deg) translateY(-4px)';
+        });
+        el.addEventListener('mouseleave', function () { el.style.transform = ''; });
+    });
+})();
 document.addEventListener('click', function (e) {
     var btn = e.target.closest ? e.target.closest('.notif-btn') : null;
     if (btn) {
