@@ -13,6 +13,7 @@
 (function () {
     var t = 'korvon-theme';
     if (localStorage.getItem(t) === 'light') document.documentElement.classList.add('light');
+    if (localStorage.getItem('korvon-sidebar-collapsed') === '1') document.documentElement.classList.add('sidebar-collapsed');
 })();
 </script>
 </head>
@@ -69,6 +70,10 @@
         Настройки
     </a>
 </aside>
+
+<button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="Скрыть/показать меню" title="Скрыть/показать меню">
+    <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+</button>
 
 <!-- MAIN -->
 <main class="main">
@@ -147,6 +152,13 @@ document.querySelector('.theme-btn').addEventListener('click', function (e) {
     localStorage.setItem('korvon-theme', isLight ? 'light' : 'dark');
     e.stopPropagation();
 });
+var sidebarToggleBtn = document.getElementById('sidebarToggle');
+if (sidebarToggleBtn) {
+    sidebarToggleBtn.addEventListener('click', function () {
+        var collapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+        localStorage.setItem('korvon-sidebar-collapsed', collapsed ? '1' : '0');
+    });
+}
 document.addEventListener('click', function (e) {
     var btn = e.target.closest ? e.target.closest('.notif-btn') : null;
     if (btn) {

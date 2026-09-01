@@ -37,8 +37,48 @@ body {
     z-index: 10;
     overflow-y: auto;
     scrollbar-width: none;
+    transition: width 0.25s ease;
 }
 .sidebar::-webkit-scrollbar { display: none; }
+
+.sidebar-toggle {
+    position: fixed;
+    top: 20px;
+    left: 84px;
+    z-index: 20;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    transition: left 0.25s ease, transform 0.25s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.sidebar-toggle:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
+.sidebar-toggle svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Collapsed = compact icon-only rail, not fully hidden */
+html.sidebar-collapsed .sidebar { width: 64px; }
+html.sidebar-collapsed .main { margin-left: 64px; }
+html.sidebar-collapsed .sidebar-toggle { left: 48px; transform: rotate(180deg); }
+html.sidebar-collapsed .sidebar .logo .brand-mark { width: 34px; }
+html.sidebar-collapsed .nav-item {
+    width: 44px;
+    padding: 10px 2px;
+    gap: 0;
+    font-size: 0;
+}
+html.sidebar-collapsed .nav-item svg { margin: 0 auto; }
+
+@media (max-width: 768px) {
+    .sidebar-toggle { display: none; }
+    html.sidebar-collapsed .sidebar { width: 100%; }
+}
 
 .sidebar .logo {
     display: flex;
@@ -201,6 +241,7 @@ body {
     flex: 1;
     padding: 24px 28px;
     min-width: 0;
+    transition: margin-left 0.25s ease;
 }
 
 /* TOP BAR */
@@ -1676,6 +1717,7 @@ td .amount.org { color: var(--orange); }
 
 @media (max-width: 768px) {
     .main { margin-left: 0; padding: 16px 14px 92px; }
+    html.sidebar-collapsed .main { margin-left: 0; }
     .sidebar {
         width: 100%;
         height: auto;

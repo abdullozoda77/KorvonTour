@@ -14,6 +14,7 @@
 (function () {
     var t = 'korvon-theme';
     if (localStorage.getItem(t) === 'light') document.documentElement.classList.add('light');
+    if (localStorage.getItem('korvon-sidebar-collapsed') === '1') document.documentElement.classList.add('sidebar-collapsed');
 })();
 </script>
 </head>
@@ -32,6 +33,10 @@
     <a href="{% url 'product_list' %}" class="nav-item">
         <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
         Товары
+    </a>
+    <a href="{% url 'ai_chat' %}" class="nav-item nav-ai">
+        <svg viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M9 13v2M15 13v2"/></svg>
+        AI Ассистент
     </a>
     <a href="{% url 'product_list' %}" class="nav-item">
         <svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 9h.01M15 9h.01M9 13h.01M15 13h.01"/></svg>
@@ -62,6 +67,10 @@
         Настройки
     </a>
 </aside>
+
+<button type="button" class="sidebar-toggle" id="sidebarToggle" aria-label="Скрыть/показать меню" title="Скрыть/показать меню">
+    <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+</button>
 
 <a href="{% url 'ai_chat' %}" class="ai-fab" aria-label="AI Ассистент" title="AI Ассистент">
     <span class="ai-fab-sparkle ai-fab-sparkle-1">✦</span>
@@ -714,6 +723,13 @@ document.querySelector('.theme-btn').addEventListener('click', function (e) {
     localStorage.setItem('korvon-theme', isLight ? 'light' : 'dark');
     e.stopPropagation();
 });
+var sidebarToggleBtn = document.getElementById('sidebarToggle');
+if (sidebarToggleBtn) {
+    sidebarToggleBtn.addEventListener('click', function () {
+        var collapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+        localStorage.setItem('korvon-sidebar-collapsed', collapsed ? '1' : '0');
+    });
+}
 document.addEventListener('click', function (e) {
     var btn = e.target.closest ? e.target.closest('.notif-btn') : null;
     if (btn) {
