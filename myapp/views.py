@@ -1,4 +1,6 @@
+import io
 import json
+import os
 import requests
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import PermissionDenied
@@ -10,14 +12,33 @@ from .models import Category, Product, Country, Sklad, Expense, User, Profile
 from .forms import CategoryForm, ProductForm, CountryForm, SkladForm, ExpenseForm, RegisterForm, ProfileForm
 from django.contrib.auth.models import Group
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db.models import Q
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import Image as RLImage, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 NOTIFICATION_LIMIT = 10
 AI_CHAT_HISTORY_LIMIT = 40
 AI_CHAT_CONTEXT_TURNS = 10
 GEMINI_MODEL = 'gemini-3.5-flash-lite'
 GEMINI_URL = f'https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent'
+
+PDF_FONT_DIR = django_settings.BASE_DIR / 'static' / 'fonts'
+_pdf_fonts_registered = False
+
+
+def _ensure_pdf_fonts():
+    global _pdf_fonts_registered
+    if _pdf_fonts_registered:
+        return
+    pdfmetrics.registerFont(TTFont('DejaVuSans', str(PDF_FONT_DIR / 'DejaVuSans.ttf')))
+    pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', str(PDF_FONT_DIR / 'DejaVuSans-Bold.ttf')))
+    _pdf_fonts_registered = True
 
 NOTIFICATION_ICONS = {
     'Товар': '📦',
@@ -464,6 +485,69 @@ def product_detail(request, pk):
     if not request.user.is_superuser and product.user != request.user:
         raise PermissionDenied
     return render(request, 'product/product_detail.html', {'product': product, })
+
+
+def product_pdf(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if not request.user.is_superuser and product.user != request.user:
+        raise PermissionDenied
+    _ensure_pdf_fonts()
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=A4,
+        topMargin=20 * mm, bottomMargin=20 * mm, leftMargin=20 * mm, rightMargin=20 * mm,
+    )
+
+    brand_style = ParagraphStyle('Brand', fontName='DejaVuSans', fontSize=10, leading=14, textColor=colors.HexColor('#8b5cf6'), spaceAfter=6)
+    title_style = ParagraphStyle('Title', fontName='DejaVuSans-Bold', fontSize=22, leading=28, spaceBefore=2, spaceAfter=8)
+    sub_style = ParagraphStyle('Sub', fontName='DejaVuSans', fontSize=10, leading=14, textColor=colors.grey, spaceAfter=14)
+    label_style = ParagraphStyle('Label', fontName='DejaVuSans', fontSize=10, leading=14, textColor=colors.grey)
+    value_style = ParagraphStyle('Value', fontName='DejaVuSans-Bold', fontSize=12, leading=16)
+    body_style = ParagraphStyle('Body', fontName='DejaVuSans', fontSize=11, leading=16)
+
+    elements = [
+        Paragraph('KORVON TOUR', brand_style),
+        Paragraph(product.name, title_style),
+        Paragraph(f'Код товара: {product.unique_code}', sub_style),
+    ]
+
+    if product.photo and os.path.exists(product.photo.path):
+        elements.append(RLImage(product.photo.path, width=80 * mm, height=80 * mm, kind='proportional'))
+        elements.append(Spacer(1, 10 * mm))
+
+    rows = [
+        ['Категория', product.category.name if product.category else '—'],
+        ['Поставщик', product.country.country_name if product.country else '—'],
+        ['Количество', f'{product.quantity} шт.'],
+        ['Цена закупки', f'{product.xarid} сом'],
+        ['Цена продажи', f'{product.furush} сом'],
+        ['Добавлено', product.created_at.strftime('%d.%m.%Y')],
+    ]
+    if request.user.is_superuser:
+        rows.append(['Владелец', product.user.username if product.user else '—'])
+
+    table_data = [[Paragraph(label, label_style), Paragraph(value, value_style)] for label, value in rows]
+    table = Table(table_data, colWidths=[50 * mm, 100 * mm])
+    table.setStyle(TableStyle([
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('LINEBELOW', (0, 0), (-1, -2), 0.5, colors.HexColor('#e2e8f0')),
+    ]))
+    elements.append(table)
+
+    if product.description:
+        elements.append(Spacer(1, 10 * mm))
+        elements.append(Paragraph('Описание', label_style))
+        elements.append(Spacer(1, 4))
+        elements.append(Paragraph(product.description, body_style))
+
+    doc.build(elements)
+    buffer.seek(0)
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{product.unique_code}.pdf"'
+    return response
+
 
 def create_product(request):
     if request.method == 'POST':

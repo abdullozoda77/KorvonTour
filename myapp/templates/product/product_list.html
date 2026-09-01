@@ -34,11 +34,13 @@
 <div class="pr-grid" id="prGrid">
     {% for p in product %}
     <div class="pr-card" data-name="{{ p.name|lower }}" data-category="{{ p.category|default:''|lower }}">
-        {% if p.photo %}
-            <img class="pr-photo" src="{{ p.photo.url }}" alt="{{ p.name }}">
-        {% else %}
-            <div class="pr-photo">📦</div>
-        {% endif %}
+        <a href="{% url 'product_pdf' p.id %}" target="_blank" title="Открыть PDF">
+            {% if p.photo %}
+                <img class="pr-photo" src="{{ p.photo.url }}" alt="{{ p.name }}">
+            {% else %}
+                <div class="pr-photo">📦</div>
+            {% endif %}
+        </a>
         <div class="pr-body">
             <div>
                 <div class="pr-name">{{ p.name }}</div>

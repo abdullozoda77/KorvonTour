@@ -24,6 +24,7 @@ urlpatterns = [
     path('sklad/delete/<int:pk>/', delete_sklad, name='delete_sklad'),
     path('product/', product_list, name='product_list'),
     path('product/<int:pk>/', product_detail, name='product_detail'),
+    path('product/<int:pk>/pdf/', product_pdf, name='product_pdf'),
     path('product/create/', create_product, name='create_product'),
     path('product/update/<int:pk>/', update_product, name='update_product'),
     path('product/delete/<int:pk>/', delete_product, name='delete_product'),
