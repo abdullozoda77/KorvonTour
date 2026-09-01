@@ -639,28 +639,67 @@
     scene.add(dir2);
 
     var geometry = new THREE.BoxGeometry(1.4, 1.4, 1.4);
-    var materials = [
-        new THREE.MeshStandardMaterial({ color: 0x7c3aed, roughness: 0.35, metalness: 0.2 }),
-        new THREE.MeshStandardMaterial({ color: 0x6d28d9, roughness: 0.35, metalness: 0.2 }),
-        new THREE.MeshStandardMaterial({ color: 0xa78bfa, roughness: 0.3, metalness: 0.2 }),
-        new THREE.MeshStandardMaterial({ color: 0x4c1d95, roughness: 0.4, metalness: 0.2 }),
-        new THREE.MeshStandardMaterial({ color: 0x8b5cf6, roughness: 0.35, metalness: 0.25 }),
-        new THREE.MeshStandardMaterial({ color: 0x5b21b6, roughness: 0.35, metalness: 0.2 }),
-    ];
-    var box = new THREE.Mesh(geometry, materials);
-    scene.add(box);
+    var box = null;
 
-    var edges = new THREE.EdgesGeometry(geometry);
-    var line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25 }));
-    box.add(line);
+    function faceTexture(bgFrom, bgTo, logoImg) {
+        var c = document.createElement('canvas');
+        c.width = 256; c.height = 256;
+        var ctx = c.getContext('2d');
+        var grad = ctx.createLinearGradient(0, 0, 256, 256);
+        grad.addColorStop(0, bgFrom);
+        grad.addColorStop(1, bgTo);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 256, 256);
+        if (logoImg) {
+            var size = 168;
+            var ratio = logoImg.width / logoImg.height;
+            var dw = size, dh = size / ratio;
+            if (dh > size) { dh = size; dw = size * ratio; }
+            ctx.drawImage(logoImg, (256 - dw) / 2, (256 - dh) / 2, dw, dh);
+        }
+        var tex = new THREE.CanvasTexture(c);
+        tex.needsUpdate = true;
+        return tex;
+    }
+
+    function buildBox(logoImg) {
+        var faceColors = [
+            ['#7c3aed', '#6d28d9'],
+            ['#6d28d9', '#5b21b6'],
+            ['#a78bfa', '#8b5cf6'],
+            ['#4c1d95', '#3b0764'],
+            ['#8b5cf6', '#7c3aed'],
+            ['#5b21b6', '#4c1d95'],
+        ];
+        var materials = faceColors.map(function (pair) {
+            return new THREE.MeshStandardMaterial({
+                map: faceTexture(pair[0], pair[1], logoImg),
+                roughness: 0.35, metalness: 0.2,
+            });
+        });
+        box = new THREE.Mesh(geometry, materials);
+        scene.add(box);
+
+        var edges = new THREE.EdgesGeometry(geometry);
+        var line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25 }));
+        box.add(line);
+
+        animate();
+    }
 
     function animate() {
         requestAnimationFrame(animate);
-        box.rotation.y += 0.008;
-        box.rotation.x = Math.sin(Date.now() * 0.0006) * 0.15;
+        if (box) {
+            box.rotation.y += 0.008;
+            box.rotation.x = Math.sin(Date.now() * 0.0006) * 0.15;
+        }
         renderer.render(scene, camera);
     }
-    animate();
+
+    var iconImg = new Image();
+    iconImg.onload = function () { buildBox(iconImg); };
+    iconImg.onerror = function () { buildBox(null); };
+    iconImg.src = '{% static "images/korvon-icon.png" %}';
 
     window.addEventListener('resize', function () {
         var nw = container.clientWidth, nh = container.clientHeight;
