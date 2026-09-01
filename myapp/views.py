@@ -177,13 +177,11 @@ def ai_chat_message(request):
     except Exception:
         return JsonResponse({'ok': False, 'error': 'ai_failed'}, status=502)
 
-
     history.append({'role': 'user', 'text': message})
     history.append({'role': 'model', 'text': reply})
     request.session['ai_chat_history'] = history[-AI_CHAT_HISTORY_LIMIT:]
 
     return JsonResponse({'ok': True, 'reply': reply})
-
 
 @require_POST
 def ai_chat_reset(request):
@@ -275,7 +273,6 @@ def home(request):
     }
     return render(request, 'home.html', context)
 
-
 def category_list(request):
     category = Category.objects.all()
     if not request.user.is_superuser:
@@ -285,7 +282,6 @@ def category_list(request):
             category = category.none()
     return render(request, 'category/category_list.html', {'category': category, })
 
-
 def category_detail(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if not request.user.is_superuser and category.user != request.user:
@@ -294,7 +290,6 @@ def category_detail(request, pk):
     if not request.user.is_superuser:
         products = products.filter(user=request.user)
     return render(request, 'category/category_detail.html', {'category': category, 'products': products, })
-
 
 def create_category(request):
     if request.method == 'POST':
@@ -310,7 +305,6 @@ def create_category(request):
         form = CategoryForm()
     return render(request, 'category/create_category.html', {'form': form, })
 
-
 def update_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if not request.user.is_superuser and category.user != request.user:
@@ -324,7 +318,6 @@ def update_category(request, pk):
         form = CategoryForm(instance=category)
     return render(request, 'category/update_category.html', {'form': form, })
 
-
 def delete_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
     if not request.user.is_superuser and category.user != request.user:
@@ -333,7 +326,6 @@ def delete_category(request, pk):
         category.delete()
         return redirect('category_list')
     return render(request, 'category/delete_category.html', {'category': category, })
-
 
 def country_list(request):
     country = Country.objects.all()
@@ -344,7 +336,6 @@ def country_list(request):
             country = country.none()
     return render(request, 'country/country_list.html', {'country': country, })
 
-
 def country_detail(request, pk):
     country = get_object_or_404(Country, pk=pk)
     if not request.user.is_superuser and country.user != request.user:
@@ -352,11 +343,9 @@ def country_detail(request, pk):
     products = country.products.all()
     return render(request, 'country/country_detail.html', {'country': country, 'products': products, })
 
-
 def create_country(request):
     if request.method == 'POST':
         form = CountryForm(request.POST)
-
         if form.is_valid():
             country = form.save(commit=False)
             country.user = request.user
@@ -380,7 +369,6 @@ def update_country(request, pk):
         form = CountryForm(instance=country)
     return render(request, 'country/update_country.html', {'form': form, })
 
-
 def delete_country(request, pk):
     country = get_object_or_404(Country, pk=pk)
     if not request.user.is_superuser and country.user != request.user:
@@ -390,7 +378,6 @@ def delete_country(request, pk):
         return redirect('country_list')
     return render(request, 'country/delete_country.html', {'country': country, })
 
-
 def sklad_list(request):
     if request.user.is_superuser:
         skladi = Sklad.objects.all().select_related('user').order_by('name', 'id')
@@ -399,7 +386,6 @@ def sklad_list(request):
     else:
         skladi = Sklad.objects.none()
     return render(request, 'sklad/sklad_list.html', {'skladi': skladi})
-
 
 def create_sklad(request):
     if not request.user.is_authenticated:
@@ -419,7 +405,6 @@ def create_sklad(request):
             form.fields.pop('user')
     return render(request, 'sklad/create_sklad.html', {'form': form, })
 
-
 def update_sklad(request, pk):
     sklad = get_object_or_404(Sklad, pk=pk)
     if not request.user.is_superuser and sklad.user != request.user:
@@ -437,7 +422,6 @@ def update_sklad(request, pk):
         form.fields.pop('user')
     return render(request, 'sklad/update_sklad.html', {'form': form, 'sklad': sklad})
 
-
 def delete_sklad(request, pk):
     if not request.user.is_superuser:
         raise PermissionDenied
@@ -446,7 +430,6 @@ def delete_sklad(request, pk):
         sklad.delete()
         return redirect('sklad_list')
     return render(request, 'sklad/delete_sklad.html', {'sklad': sklad})
-
 
 def purchase_list(request):
     purchases = Product.objects.all()
@@ -458,7 +441,6 @@ def purchase_list(request):
         'total_qty': total_qty,
     })
 
-
 def employees_list(request):
     suppliers = Country.objects.all()
     if not request.user.is_superuser:
@@ -467,7 +449,6 @@ def employees_list(request):
         else:
             suppliers = suppliers.none()
     return render(request, 'employees/employees_list.html', {'suppliers': suppliers, })
-
 
 def product_list(request):
     products = Product.objects.all()
@@ -478,13 +459,11 @@ def product_list(request):
             products = products.none()
     return render(request, 'product/product_list.html', {'product': products, })
 
-
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if not request.user.is_superuser and product.user != request.user:
         raise PermissionDenied
     return render(request, 'product/product_detail.html', {'product': product, })
-
 
 def create_product(request):
     if request.method == 'POST':
@@ -511,7 +490,6 @@ def create_product(request):
         form.fields['country'].queryset = Country.objects.filter(user=request.user)
     return render(request, 'product/create_product.html', {'form': form, })
 
-
 def update_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if not request.user.is_superuser and product.user != request.user:
@@ -535,7 +513,6 @@ def update_product(request, pk):
         form.fields['country'].queryset = Country.objects.filter(user=request.user)
     return render(request, 'product/update_product.html', {'form': form, })
 
-
 def delete_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if not request.user.is_superuser and product.user != request.user:
@@ -544,7 +521,6 @@ def delete_product(request, pk):
         product.delete()
         return redirect('product_list')
     return render(request, 'product/delete_product.html', {'product': product, })
-
 
 def expense_list(request):
     expenses = Expense.objects.all()
@@ -556,13 +532,11 @@ def expense_list(request):
     total_expenses = sum(expense.total for expense in expenses)
     return render(request, 'expense/expense_list.html', {'expense': expenses, 'total_expenses': total_expenses, })
 
-
 def expense_detail(request, pk):
     expense = get_object_or_404(Expense, pk=pk)
     if not request.user.is_superuser and expense.user != request.user:
         raise PermissionDenied
     return render(request, 'expense/expense_detail.html', {'expense': expense, })
-
 
 def create_expense(request):
     if request.method == 'POST':
@@ -575,7 +549,6 @@ def create_expense(request):
     else:
         form = ExpenseForm()
     return render(request, 'expense/create_expense.html', {'form': form, })
-
 
 def update_expense(request, pk):
     expense = get_object_or_404(Expense, pk=pk)
@@ -590,7 +563,6 @@ def update_expense(request, pk):
         form = ExpenseForm(instance=expense)
     return render(request, 'expense/update_expense.html', {'form': form, })
 
-
 def delete_expense(request, pk):
     expense = get_object_or_404(Expense, pk=pk)
     if not request.user.is_superuser and expense.user != request.user:
@@ -599,7 +571,6 @@ def delete_expense(request, pk):
         expense.delete()
         return redirect('expense_list')
     return render(request, 'expense/delete_expense.html', {'expense': expense, })
-
 
 def register(request):
     if request.method == 'POST':
@@ -613,7 +584,6 @@ def register(request):
         form = RegisterForm()
     return render(request, 'accounts/register.html', {'form': form})
 
-
 def user_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -626,11 +596,9 @@ def user_login(request):
             messages.error(request, 'Неверное имя пользователя или пароль')
     return render(request, 'accounts/login.html')
 
-
 def user_logout(request):
     logout(request)
     return redirect('login')
-
 
 def reports(request):
     if not request.user.is_authenticated:

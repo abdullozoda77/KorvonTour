@@ -2139,6 +2139,7 @@ html.light .chart-tooltip {
 }
 html.light .chart-tooltip .t-name { color: #0f172a; }
 html.light .chart-tooltip .t-amount { color: #334155; }
+html.light .chart-tooltip .t-pct { color: var(--purple); }
 .chart-center {
     position: absolute;
     top: 50%;
@@ -2277,6 +2278,7 @@ html.light {
     --card-border: rgba(15,23,42,0.08);
     --text: #0f172a;
     --muted: #64748b;
+    --purple: #2563eb;
 }
 html.light .search:focus-within { background: #ffffff; }
 html.light .theme-btn:hover,
@@ -2306,8 +2308,8 @@ html.light .notif-panel {
     border-color: rgba(15,23,42,0.1);
     box-shadow: 0 24px 60px rgba(15,23,42,0.18), 0 0 0 1px rgba(15,23,42,0.03);
 }
-html.light .notif-head { background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(59,130,246,0.05)); border-bottom-color: rgba(15,23,42,0.08); }
-html.light .notif-item:hover { background: rgba(139,92,246,0.08); }
+html.light .notif-head { background: linear-gradient(135deg, rgba(37,99,235,0.08), rgba(8,145,178,0.05)); border-bottom-color: rgba(15,23,42,0.08); }
+html.light .notif-item:hover { background: rgba(37,99,235,0.08); }
 html.light .icon-btn .dot { border-color: #fff; }
 html.light .icon-btn .dot,
 html.light .notif-badge { border-color: #fff; }
@@ -2324,7 +2326,7 @@ html.light tbody tr:hover { background: rgba(15,23,42,0.02); }
 
 /* hardcoded dark surfaces */
 html.light .map-modal-box { background: #ffffff; border-color: rgba(15,23,42,0.1); }
-html.light .map-modal-head { background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(59,130,246,0.06)); border-bottom-color: rgba(15,23,42,0.08); }
+html.light .map-modal-head { background: linear-gradient(135deg, rgba(37,99,235,0.1), rgba(8,145,178,0.06)); border-bottom-color: rgba(15,23,42,0.08); }
 html.light .map-modal-title { color: var(--text); }
 html.light .map-modal-sub { color: var(--muted); }
 html.light .map-modal-body,
@@ -2332,13 +2334,13 @@ html.light .map-modal-body .leaflet-container { background: #e8edf4; }
 html.light .leaflet-popup-content-wrapper { background: #fff; color: var(--text); }
 html.light .leaflet-popup-tip { background: #fff; }
 html.light .map { background:
-    radial-gradient(circle at 20% 30%, rgba(139,92,246,0.12), transparent 40%),
-    radial-gradient(circle at 75% 60%, rgba(59,130,246,0.12), transparent 45%),
+    radial-gradient(circle at 20% 30%, rgba(37,99,235,0.12), transparent 40%),
+    radial-gradient(circle at 75% 60%, rgba(8,145,178,0.12), transparent 45%),
     #e8edf4; }
 
 html.light .analytics-card { background:
-    radial-gradient(120% 140% at 0% 0%, rgba(139,92,246,0.10), transparent 45%),
-    radial-gradient(120% 140% at 100% 100%, rgba(59,130,246,0.08), transparent 45%),
+    radial-gradient(120% 140% at 0% 0%, rgba(37,99,235,0.10), transparent 45%),
+    radial-gradient(120% 140% at 100% 100%, rgba(8,145,178,0.08), transparent 45%),
     #ffffff;
     border-color: rgba(15,23,42,0.08);
     box-shadow: 0 20px 50px rgba(15,23,42,0.12), inset 0 1px 0 rgba(255,255,255,0.5);
@@ -2358,8 +2360,8 @@ html.light .chart-center-label { color: var(--muted); }
 html.light .chart-center-sub { color: var(--muted); }
 
 html.light .auth-body { background:
-    radial-gradient(1200px 600px at 50% -10%, rgba(139,92,246,0.12), transparent 60%),
-    radial-gradient(900px 500px at 110% 110%, rgba(59,130,246,0.10), transparent 60%),
+    radial-gradient(1200px 600px at 50% -10%, rgba(37,99,235,0.12), transparent 60%),
+    radial-gradient(900px 500px at 110% 110%, rgba(8,145,178,0.10), transparent 60%),
     #eef2f7; }
 
 /* form inputs on light */
@@ -2389,7 +2391,7 @@ html.light .btn-ghost:hover { color: var(--text); }
 /* stat-card top accent bars remain colorful - fine */
 
 /* sklav/sklado colored gradients get a white card base so text stays readable */
-html.light .sklado { background: linear-gradient(135deg, rgba(139,92,246,0.10), rgba(59,130,246,0.06)); }
+html.light .sklado { background: linear-gradient(135deg, rgba(37,99,235,0.10), rgba(8,145,178,0.06)); }
 html.light .skladi { box-shadow: 0 8px 24px rgba(15,23,42,0.12); }
 
 /* welcome heading */
@@ -2403,3 +2405,428 @@ html.light .emp-name,
 html.light .sup-name,
 html.light .cat-name,
 html.light .pr-name { color: var(--text); }
+
+/* ===== FULL LIGHT MODE FIXES ===== */
+
+/* summary cards: lighter tinted gradients */
+html.light .expense-summary .sum-card {
+    background: linear-gradient(135deg, rgba(249,115,22,0.06), rgba(249,115,22,0.01));
+    border-color: rgba(249,115,22,0.18);
+}
+html.light .pr-summary .sum-card {
+    background: linear-gradient(135deg, rgba(20,184,166,0.06), rgba(20,184,166,0.01));
+    border-color: rgba(20,184,166,0.18);
+}
+html.light .cat-summary .sum-card {
+    background: linear-gradient(135deg, rgba(37,99,235,0.06), rgba(37,99,235,0.01));
+    border-color: rgba(37,99,235,0.18);
+}
+html.light .sup-summary .sum-card {
+    background: linear-gradient(135deg, rgba(8,145,178,0.06), rgba(8,145,178,0.01));
+    border-color: rgba(8,145,178,0.18);
+}
+html.light .emp-summary .sum-card {
+    background: linear-gradient(135deg, rgba(34,197,94,0.06), rgba(34,197,94,0.01));
+    border-color: rgba(34,197,94,0.18);
+}
+
+/* map area */
+html.light .map {
+    background: radial-gradient(circle at 20% 30%, rgba(37,99,235,0.08), transparent 40%),
+        radial-gradient(circle at 75% 60%, rgba(8,145,178,0.08), transparent 45%),
+        #e8edf4;
+}
+
+/* skladi floating list items */
+html.light .skladi {
+    background: linear-gradient(135deg, rgba(37,99,235,0.07), rgba(8,145,178,0.04));
+    border-color: rgba(37,99,235,0.18);
+    box-shadow: 0 8px 24px rgba(15,23,42,0.08);
+}
+html.light .skladi .skladi-count {
+    background: rgba(37,99,235,0.08);
+    color: var(--purple);
+}
+html.light .skladi-empty,
+html.light .sklado-empty {
+    background: rgba(15,23,42,0.03);
+    border-color: rgba(15,23,42,0.12);
+    color: var(--muted);
+}
+
+/* sklado overview cards */
+html.light .sklado {
+    background: linear-gradient(135deg, rgba(37,99,235,0.06), rgba(8,145,178,0.03));
+    border-color: rgba(37,99,235,0.15);
+}
+html.light .sklado-count {
+    background: rgba(37,99,235,0.08);
+}
+
+/* city sklad modal rows */
+html.light .city-sklad-row {
+    background: rgba(15,23,42,0.02);
+    border-color: rgba(37,99,235,0.12);
+}
+html.light .city-sklad-row:hover {
+    background: rgba(37,99,235,0.05);
+    border-color: rgba(37,99,235,0.35);
+}
+html.light .city-sklad-row .city-sklad-name { color: var(--purple); }
+
+/* notification panel */
+html.light .notif-panel {
+    background: #ffffff;
+    border-color: rgba(15,23,42,0.1);
+    box-shadow: 0 24px 60px rgba(15,23,42,0.15), 0 0 0 1px rgba(15,23,42,0.04);
+}
+html.light .notif-head {
+    background: linear-gradient(135deg, rgba(37,99,235,0.06), rgba(8,145,178,0.03));
+    border-bottom-color: rgba(15,23,42,0.06);
+    color: var(--text);
+}
+html.light .notif-qty {
+    background: rgba(37,99,235,0.08);
+    border-color: rgba(37,99,235,0.18);
+    color: var(--purple);
+}
+
+/* product items (inside lists) */
+html.light .product-item {
+    background: rgba(15,23,42,0.015);
+    border-color: var(--card-border);
+}
+html.light .product-item:hover {
+    border-color: rgba(15,23,42,0.12);
+}
+
+/* category / country / expense list items */
+html.light .cd-item,
+html.light .sd-item,
+html.light .ed-product {
+    background: rgba(15,23,42,0.015);
+    border-color: var(--card-border);
+}
+
+/* product card badges */
+html.light .pr-badge {
+    background: rgba(15,23,42,0.04);
+    border-color: rgba(15,23,42,0.1);
+    color: var(--muted);
+}
+
+/* expense summary card */
+html.light .confirm-card .confirm-icon.icon-expense {
+    background: rgba(249,115,22,0.08);
+}
+
+/* product detail boxes */
+html.light .pd-box,
+html.light .ed-box {
+    background: rgba(15,23,42,0.02);
+    border-color: var(--card-border);
+}
+
+/* product prices */
+html.light .pr-price {
+    background: rgba(15,23,42,0.02);
+    border-color: var(--card-border);
+}
+
+/* product detail photo background */
+html.light .pr-photo {
+    background: linear-gradient(135deg, rgba(20,184,166,0.12), rgba(8,145,178,0.10));
+}
+html.light .pd-photo {
+    background: linear-gradient(135deg, rgba(20,184,166,0.12), rgba(8,145,178,0.10));
+}
+
+/* AI chat */
+html.light .ai-msg-model .ai-bubble {
+    background: rgba(15,23,42,0.04);
+    border-color: rgba(15,23,42,0.08);
+    color: var(--text);
+}
+html.light .ai-chat-input input {
+    background: rgba(15,23,42,0.02);
+    border-color: rgba(15,23,42,0.1);
+    color: var(--text);
+}
+html.light .ai-dot {
+    background: var(--muted);
+}
+
+/* chart / analytics */
+html.light .analytics-card {
+    background: radial-gradient(120% 140% at 0% 0%, rgba(37,99,235,0.06), transparent 45%),
+        radial-gradient(120% 140% at 100% 100%, rgba(8,145,178,0.05), transparent 45%),
+        #ffffff;
+    border-color: rgba(15,23,42,0.08);
+    box-shadow: 0 20px 50px rgba(15,23,42,0.1);
+}
+html.light .analytics-head-text h3,
+html.light .a-name { color: var(--text); }
+html.light .analytics-sub,
+html.light .a-amount { color: var(--muted); }
+html.light .chart-center-value { color: var(--text); }
+html.light .chart-center-label,
+html.light .chart-center-sub { color: var(--muted); }
+html.light .legend-row {
+    background: rgba(15,23,42,0.03);
+    border-color: rgba(15,23,42,0.08);
+}
+html.light .legend-row:hover,
+html.light .legend-row.active {
+    background: rgba(37,99,235,0.06);
+    border-color: rgba(37,99,235,0.3);
+    box-shadow: 0 8px 20px rgba(15,23,42,0.08);
+}
+html.light .legend-row.top {
+    background: linear-gradient(90deg, rgba(37,99,235,0.08), rgba(37,99,235,0.02));
+    border-color: rgba(37,99,235,0.2);
+}
+html.light .legend-row.top .a-name { color: var(--purple); }
+html.light .a-bar { background: rgba(15,23,42,0.08); }
+
+/* analytics insight box */
+html.light .analytics-insight {
+    background: linear-gradient(135deg, rgba(37,99,235,0.06), rgba(8,145,178,0.03));
+    border-color: rgba(37,99,235,0.15);
+}
+html.light .insight-title { color: var(--purple); }
+html.light .insight-desc { color: var(--muted); }
+html.light .insight-desc b { color: var(--text); }
+
+/* category detail side panel */
+html.light .cd-side {
+    background: linear-gradient(160deg, rgba(37,99,235,0.06), rgba(8,145,178,0.02));
+    border-color: rgba(37,99,235,0.15);
+}
+html.light .cd-icon {
+    background: linear-gradient(135deg, rgba(37,99,235,0.15), rgba(8,145,178,0.12));
+}
+
+/* country/supplier detail side panel */
+html.light .sd-side {
+    background: linear-gradient(160deg, rgba(8,145,178,0.06), rgba(34,211,238,0.02));
+    border-color: rgba(8,145,178,0.15);
+}
+html.light .sd-icon {
+    background: linear-gradient(135deg, rgba(8,145,178,0.15), rgba(34,211,238,0.12));
+}
+
+/* expense detail side panel */
+html.light .ed-side {
+    background: linear-gradient(160deg, rgba(249,115,22,0.06), rgba(249,115,22,0.01));
+    border-color: rgba(249,115,22,0.15);
+}
+html.light .ed-icon {
+    background: linear-gradient(135deg, rgba(249,115,22,0.15), rgba(245,158,11,0.12));
+}
+
+/* table borders */
+html.light thead th { border-bottom-color: rgba(15,23,42,0.08); }
+html.light tbody td { border-bottom-color: rgba(15,23,42,0.06); }
+
+/* form errors */
+html.light .form-error {
+    background: rgba(239,68,68,0.06);
+    border-color: rgba(239,68,68,0.18);
+    color: var(--red);
+}
+
+/* confirm card */
+html.light .confirm-card .confirm-icon {
+    background: rgba(239,68,68,0.06);
+    border-color: rgba(239,68,68,0.15);
+}
+
+/* button adjustments for light */
+html.light .btn-ghost {
+    background: rgba(15,23,42,0.03);
+    border-color: rgba(15,23,42,0.1);
+    color: var(--muted);
+}
+html.light .btn-ghost:hover {
+    background: rgba(15,23,42,0.06);
+    color: var(--text);
+}
+html.light .btn-danger {
+    background: rgba(239,68,68,0.06);
+    border-color: rgba(239,68,68,0.18);
+    color: var(--red);
+}
+
+/* sidebar active nav on light */
+html.light .nav-item.active {
+    background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(8,145,178,0.10));
+    box-shadow: inset 0 0 0 1px rgba(37,99,235,0.25);
+}
+
+/* nav item expense / ai on light */
+html.light .nav-item.nav-expense {
+    background: linear-gradient(135deg, rgba(249,115,22,0.06), rgba(249,115,22,0.01));
+    border-color: rgba(249,115,22,0.15);
+}
+html.light .nav-item.nav-ai {
+    background: linear-gradient(135deg, rgba(37,99,235,0.06), rgba(37,99,235,0.01));
+    border-color: rgba(37,99,235,0.15);
+}
+
+/* stat card hover lighter shadow */
+html.light .stat-card:hover,
+html.light .pr-card:hover,
+html.light .cat-card:hover,
+html.light .sup-card:hover,
+html.light .emp-card:hover {
+    box-shadow: 0 12px 30px rgba(15,23,42,0.1);
+}
+
+/* search focus glow on light */
+html.light .search:focus-within {
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1), 0 6px 20px rgba(15,23,42,0.06);
+    background: #ffffff;
+}
+
+/* alert / flash on light */
+html.light .alert {
+    background: linear-gradient(135deg, rgba(34,197,94,0.06), rgba(34,197,94,0.01));
+    border-color: rgba(34,197,94,0.18);
+    border-left-color: var(--green);
+    color: var(--green);
+    box-shadow: 0 4px 16px rgba(34,197,94,0.06);
+}
+html.light .alert.error {
+    background: linear-gradient(135deg, rgba(239,68,68,0.06), rgba(239,68,68,0.01));
+    border-color: rgba(239,68,68,0.18);
+    border-left-color: var(--red);
+    color: var(--red);
+    box-shadow: 0 4px 16px rgba(239,68,68,0.06);
+}
+
+/* map modal close button on light */
+html.light .map-modal-close {
+    border-color: rgba(15,23,42,0.1);
+    background: rgba(15,23,42,0.04);
+    color: var(--text);
+}
+
+/* tag colors on light */
+html.light .tag {
+    background: rgba(37,99,235,0.08);
+    color: var(--purple);
+}
+html.light .tag.tag-expense {
+    background: rgba(249,115,22,0.08);
+    color: var(--orange);
+}
+
+/* thumb photo placeholders */
+html.light td .thumb-photo {
+    background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(8,145,178,0.10));
+}
+
+/* sidebar scrollbar when collapsed */
+html.light .sidebar { scrollbar-color: rgba(15,23,42,0.1) transparent; }
+
+/* auth card shadow on light */
+html.light .auth-card {
+    box-shadow: 0 24px 60px rgba(15,23,42,0.12);
+}
+
+/* expense row border */
+html.light .expense-row { border-bottom-color: rgba(15,23,42,0.06); }
+
+/* product grid items inside detail page */
+html.light .product-grid .product-item {
+    background: rgba(15,23,42,0.015);
+}
+
+/* chart labels */
+html.light .chart-labels { color: var(--muted); }
+
+/* cd-item / sd-item backgrounds */
+html.light .cd-list .cd-item,
+html.light .sd-list .sd-item {
+    background: rgba(15,23,42,0.015);
+}
+html.light .cd-item:hover,
+html.light .sd-item:hover {
+    border-color: rgba(37,99,235,0.25);
+}
+html.light .sd-item:hover {
+    border-color: rgba(8,145,178,0.25);
+}
+
+/* empty states */
+html.light .empty,
+html.light .empty-pr,
+html.light .empty-cat,
+html.light .empty-sup,
+html.light .empty-emp,
+html.light .empty-cd,
+html.light .empty-sd {
+    color: var(--muted);
+    border-color: rgba(15,23,42,0.1);
+}
+
+/* tooltip on chart for light */
+html.light .chart-tooltip {
+    background: #ffffff;
+    border-color: rgba(15,23,42,0.12);
+    color: var(--text);
+    box-shadow: 0 10px 26px rgba(15,23,42,0.12);
+}
+html.light .chart-tooltip .t-name { color: var(--text); }
+html.light .chart-tooltip .t-amount { color: var(--muted); }
+
+/* form input focus on light */
+html.light .form-group input:focus,
+html.light .form-group select:focus,
+html.light .form-group textarea:focus {
+    border-color: var(--purple);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    background: #ffffff;
+}
+
+/* light-mode friendly accent text colors (darker teal/purple for contrast) */
+html.light .pr-badge.teal,
+html.light .pd-badge.teal {
+    background: rgba(20,184,166,0.08);
+    border-color: rgba(20,184,166,0.2);
+    color: #0d9488;
+}
+html.light .pd-code { color: #0d9488; }
+html.light .pr-header h1 svg { stroke: #0d9488; }
+
+/* swap any remaining purple accents to blue/cyan in light mode */
+html.light .nav-item.nav-ai,
+html.light .nav-item.nav-ai:hover { color: var(--purple); box-shadow: inset 0 0 0 1px rgba(37,99,235,0.35); }
+html.light .nav-item.nav-expense:hover { color: var(--orange); box-shadow: inset 0 0 0 1px rgba(249,115,22,0.5); }
+html.light .analytics-icon svg,
+html.light .insight-icon { stroke: var(--purple); }
+html.light .korvon-marker .korvon-pin {
+    background: linear-gradient(135deg, #2563eb, #06b6d4);
+    box-shadow: 0 0 16px rgba(37,99,235,0.6);
+}
+html.light .ai-fab {
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6, #06b6d4);
+}
+
+/* stat card accent circles/bars in light mode: purple->blue, blue->cyan */
+html.light .stat-purple::before { background: var(--purple); }
+html.light .stat-purple .stat-label { color: var(--purple); }
+html.light .stat-blue::before { background: #0891b2; }
+html.light .stat-blue .stat-label { color: #0891b2; }
+html.light .stat-orange::before { background: var(--orange); }
+html.light .stat-orange .stat-label { color: var(--orange); }
+html.light .stat-green::before { background: var(--green); }
+html.light .stat-green .stat-label { color: var(--green); }
+
+/* light mode: SVG map markers & region purple -> blue */
+html.light .dushanbe-region { fill: rgba(37,99,235,0.20) !important; stroke: rgba(37,99,235,0.5) !important; }
+html.light .dushanbe-halo { fill: rgba(37,99,235,0.22) !important; }
+html.light .dushanbe-dot { fill: #2563eb !important; }
+html.light .dushanbe-text { fill: #2563eb !important; }
+html.light .sklad-pin:hover .dushanbe-text { fill: #0f172a !important; }
+html.light .sklad-pin:hover .dushanbe-dot { filter: drop-shadow(0 0 8px rgba(37,99,235,0.7)); }
