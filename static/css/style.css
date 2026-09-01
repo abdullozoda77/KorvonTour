@@ -66,7 +66,9 @@ body {
 html.sidebar-collapsed .sidebar { width: 64px; }
 html.sidebar-collapsed .main { margin-left: 64px; }
 html.sidebar-collapsed .sidebar-toggle { left: 48px; transform: rotate(180deg); }
-html.sidebar-collapsed .sidebar .logo .brand-mark { width: 34px; }
+.brand-mark-icon { display: none; width: 38px; }
+html.sidebar-collapsed .brand-mark-full { display: none; }
+html.sidebar-collapsed .brand-mark-icon { display: block; margin: 0 auto; }
 html.sidebar-collapsed .nav-item {
     width: 44px;
     padding: 10px 2px;
