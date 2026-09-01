@@ -1,15 +1,23 @@
+import json
+import requests
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.utils import timezone
+from django.conf import settings as django_settings
 from .models import Category, Product, Country, Sklad, Expense, User, Profile
 from .forms import CategoryForm, ProductForm, CountryForm, SkladForm, ExpenseForm, RegisterForm, ProfileForm
 from django.contrib.auth.models import Group
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
+from django.db.models import Q
 
 NOTIFICATION_LIMIT = 10
+AI_CHAT_HISTORY_LIMIT = 40
+AI_CHAT_CONTEXT_TURNS = 10
+GEMINI_MODEL = 'gemini-3.5-flash-lite'
+GEMINI_URL = f'https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent'
 
 NOTIFICATION_ICONS = {
     'Товар': '📦',
@@ -52,6 +60,139 @@ def notifications(request):
     return {'notifications': items[:NOTIFICATION_LIMIT]}
 
 
+def home_search(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'ok': False, 'error': 'auth'}, status=401)
+    if request.user.is_superuser:
+        user_filter = {}
+    else:
+        user_filter = {'user': request.user}
+    q = (request.GET.get('q') or '').strip()
+    results = []
+    if q:
+        products = (
+            Product.objects.filter(**user_filter)
+            .select_related('category', 'country')
+            .filter(Q(name__icontains=q) | Q(category__name__icontains=q))
+            .order_by('name', 'id')
+        )
+        expenses = (
+            Expense.objects.filter(**user_filter)
+            .filter(Q(name__icontains=q) | Q(description__icontains=q))
+            .order_by('-created_at')
+        )
+    else:
+        products = (
+            Product.objects.filter(**user_filter)
+            .select_related('category', 'country')
+            .order_by('name', 'id')
+        )
+        expenses = Expense.objects.filter(**user_filter).order_by('-created_at')
+
+    for p in products[:50]:
+        results.append({
+            'type': 'product',
+            'id': p.id,
+            'name': p.name,
+            'category': p.category.name if p.category else '',
+            'quantity': p.quantity,
+            'photo': p.photo.url if p.photo else None,
+        })
+    for e in expenses[:20]:
+        results.append({
+            'type': 'expense',
+            'id': e.id,
+            'name': e.name,
+            'kind': e.get_expense_type_display(),
+            'total': str(e.total),
+            'date': e.date.strftime('%d.%m.%Y'),
+        })
+    return JsonResponse({'ok': True, 'q': q, 'results': results})
+
+
+def build_ai_context(user):
+    if user.is_superuser:
+        products = Product.objects.select_related('category', 'user').all().order_by('name')
+    else:
+        products = Product.objects.select_related('category').filter(user=user).order_by('name')
+    lines = []
+    for p in products:
+        owner = f', владелец: {p.user.username}' if user.is_superuser and p.user else ''
+        category = p.category.name if p.category else 'без категории'
+        lines.append(
+            f'- {p.name}: {p.quantity} шт., категория: {category}, '
+            f'закупка {p.xarid} сом/шт, продажа {p.furush} сом/шт{owner}'
+        )
+    if not lines:
+        return 'Товаров пока нет.'
+    return '\n'.join(lines)
+
+
+def ai_chat(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    history = request.session.get('ai_chat_history', [])
+    return render(request, 'ai/ai_chat.html', {'history': history})
+
+
+@require_POST
+def ai_chat_message(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'ok': False, 'error': 'auth'}, status=401)
+    if not django_settings.GEMINI_API_KEY:
+        return JsonResponse({'ok': False, 'error': 'no_api_key'}, status=503)
+    try:
+        payload = json.loads(request.body)
+    except (ValueError, TypeError):
+        return JsonResponse({'ok': False, 'error': 'bad_request'}, status=400)
+    message = (payload.get('message') or '').strip()
+    if not message:
+        return JsonResponse({'ok': False, 'error': 'empty'}, status=400)
+
+    history = request.session.get('ai_chat_history', [])
+
+    system_prompt = (
+        'Ты — AI-ассистент склада Korvon Tour. Отвечай кратко и по делу, на русском языке. '
+        'Используй только приведённые ниже данные о товарах, не выдумывай цифры и не добавляй товары, '
+        'которых нет в списке.\n\nДанные о товарах:\n' + build_ai_context(request.user)
+    )
+    contents = [
+        {'role': 'user', 'parts': [{'text': system_prompt}]},
+        {'role': 'model', 'parts': [{'text': 'Понял, готов отвечать на вопросы о товарах.'}]},
+    ]
+    for turn in history[-AI_CHAT_CONTEXT_TURNS:]:
+        contents.append({'role': turn['role'], 'parts': [{'text': turn['text']}]})
+    contents.append({'role': 'user', 'parts': [{'text': message}]})
+
+    try:
+        resp = requests.post(
+            GEMINI_URL,
+            params={'key': django_settings.GEMINI_API_KEY},
+            json={'contents': contents},
+            timeout=30,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        reply = data['candidates'][0]['content']['parts'][0]['text']
+    except Exception:
+        return JsonResponse({'ok': False, 'error': 'ai_failed'}, status=502)
+
+
+    history.append({'role': 'user', 'text': message})
+    history.append({'role': 'model', 'text': reply})
+    request.session['ai_chat_history'] = history[-AI_CHAT_HISTORY_LIMIT:]
+
+    return JsonResponse({'ok': True, 'reply': reply})
+
+
+@require_POST
+def ai_chat_reset(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'ok': False}, status=401)
+    request.session['ai_chat_history'] = []
+    return JsonResponse({'ok': True})
+
+
 @require_POST
 def mark_notifications_seen(request):
     if not request.user.is_authenticated:
@@ -63,10 +204,12 @@ def mark_notifications_seen(request):
 
 
 def home(request):
-    if request.user.is_authenticated and not request.user.is_superuser:
-        user_filter = {'user': request.user}
-    else:
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if request.user.is_superuser:
         user_filter = {}
+    else:
+        user_filter = {'user': request.user}
     products = Product.objects.filter(**user_filter)
     categories = Category.objects.filter(**user_filter)
     expenses = Expense.objects.filter(**user_filter)

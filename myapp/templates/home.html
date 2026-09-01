@@ -63,6 +63,13 @@
     </a>
 </aside>
 
+<a href="{% url 'ai_chat' %}" class="ai-fab" aria-label="AI Ассистент" title="AI Ассистент">
+    <span class="ai-fab-sparkle ai-fab-sparkle-1">✦</span>
+    <span class="ai-fab-sparkle ai-fab-sparkle-2">✦</span>
+    <span class="ai-fab-sparkle ai-fab-sparkle-3">✦</span>
+    <svg viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M9 13v2M15 13v2"/></svg>
+</a>
+
 <!-- MAIN -->
 <main class="main">
 
@@ -70,7 +77,7 @@
     <div class="topbar">
         <div class="search">
             <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input type="text" placeholder="Поиск товаров, расходов...">
+            <input type="text" placeholder="Поиск товаров, расходов..." id="homeSearchInput" autocomplete="off">
         </div>
 
         <div class="topbar-right">
@@ -204,6 +211,7 @@
             <div class="analytics-donut">
                 <div class="chart-box">
                     <canvas id="donutChart"></canvas>
+                    <div class="chart-tooltip" id="donutTooltip"></div>
                     <div class="chart-center">
                         <div class="chart-center-label">Всего</div>
                         <div class="chart-center-value">{{ total_purchase|floatformat:"0" }} сом</div>
@@ -373,8 +381,7 @@
     <div class="bottom">
         <div class="card">
             <h3>{% if user.is_superuser %}Товары компании{% else %}Мои товары{% endif %}</h3>
-            {% if products %}
-            <div class="product-grid">
+            <div class="product-grid" id="productGrid">
                 {% for product in products %}
                 <div class="product-item">
                     {% if product.photo %}
@@ -387,11 +394,10 @@
                         <div class="p-qty">{{ product.quantity }} шт.</div>
                     </div>
                 </div>
+                {% empty %}
+                <div class="empty">Товары пока не добавлены.</div>
                 {% endfor %}
             </div>
-            {% else %}
-                <div class="empty">Товары пока не добавлены.</div>
-            {% endif %}
         </div>
 
         <div class="card">
@@ -459,15 +465,60 @@
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    enabled: true,
-                    backgroundColor: '#171c26',
-                    titleColor: '#e5e7eb',
-                    bodyColor: '#cbd5e1',
-                    borderColor: 'rgba(139,92,246,0.4)',
-                    borderWidth: 1,
-                    padding: 12,
-                    cornerRadius: 10,
-                    displayColors: true,
+                    enabled: false,
+                    external: function(context) {
+                        var tooltipEl = document.getElementById('donutTooltip');
+                        var tooltipModel = context.tooltip;
+                        var dataIndex = tooltipModel.dataPoints && tooltipModel.dataPoints[0] ? tooltipModel.dataPoints[0].dataIndex : 0;
+                        var arc = context.chart.getDatasetMeta(0).data[dataIndex];
+
+                        if (tooltipModel.opacity === 0) {
+                            tooltipEl.style.opacity = '0';
+                            tooltipEl.style.pointerEvents = 'none';
+                            return;
+                        }
+
+                        var val = tooltipModel.dataPoints[0].parsed || 0;
+                        var pct = total > 0 ? (val / total * 100) : 0;
+                        var color = colors[dataIndex];
+                        tooltipEl.innerHTML =
+                            '<span class="t-swatch" style="background:' + color + ';"></span>' +
+                            '<span class="t-name">' + tooltipModel.dataPoints[0].label + '</span>' +
+                            '<span class="t-amount">' + val.toFixed(0) + ' сом</span>' +
+                            '<span class="t-pct">' + pct.toFixed(1) + '%</span>';
+
+                        tooltipEl.style.opacity = '1';
+                        tooltipEl.style.pointerEvents = 'none';
+
+                        var chart = context.chart;
+                        var box = document.querySelector('.analytics-card');
+                        var boxRect = box.getBoundingClientRect();
+                        var baseRect = tooltipEl.parentElement.getBoundingClientRect();
+                        var tooltipW = tooltipEl.offsetWidth;
+                        var tooltipH = tooltipEl.offsetHeight;
+
+                        var angle = (arc.startAngle + arc.endAngle) / 2;
+                        var isMobile = window.innerWidth <= 600;
+                        var dist = isMobile ? arc.outerRadius + 16 : arc.outerRadius + 18;
+
+                        var rawX = arc.x + dist * Math.cos(angle);
+                        var rawY = arc.y + dist * Math.sin(angle);
+
+                        var left = baseRect.left + rawX;
+                        var top = baseRect.top + rawY;
+
+                        if (left + tooltipW > boxRect.right - 12) left = boxRect.right - tooltipW - 12;
+                        if (left < boxRect.left + 12) left = boxRect.left + 12;
+                        if (top + tooltipH > boxRect.bottom - 12) top = boxRect.bottom - tooltipH - 12;
+                        if (top < boxRect.top + 12) top = boxRect.top + 12;
+
+                        var viewW = window.innerWidth;
+                        if (left + tooltipW > viewW - 8) left = viewW - tooltipW - 8;
+                        if (left < 8) left = 8;
+
+                        tooltipEl.style.left = (left - baseRect.left) + 'px';
+                        tooltipEl.style.top = (top - baseRect.top) + 'px';
+                    },
                     callbacks: {
                         label: function (ctx) {
                             var val = ctx.parsed || 0;
@@ -679,6 +730,101 @@ document.addEventListener('click', function (e) {
 document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') document.querySelectorAll('.notif-wrap.open').forEach(function (w) { w.classList.remove('open'); });
 });
+</script>
+
+<script>
+(function () {
+    var grid = document.getElementById('productGrid');
+    var input = document.getElementById('homeSearchInput');
+    if (!grid || !input) return;
+
+    var originalHTML = grid.innerHTML;
+
+    var debounceTimer = null;
+    var scrolledForThisSearch = false;
+
+    function renderEmpty() {
+        grid.innerHTML = '<div class="empty">По запросу ничего не найдено.</div>';
+        grid.style.display = 'block';
+    }
+
+    function renderResults(results) {
+        grid.innerHTML = '';
+        if (!results.length) {
+            grid.innerHTML = '<div class="empty">По запросу ничего не найдено.</div>';
+            return;
+        }
+        results.forEach(function (p) {
+            var item = document.createElement('div');
+            if (p.type === 'expense') {
+                item.className = 'expense-row';
+                item.innerHTML =
+                    '<div>' +
+                        '<div class="e-name">' + p.name + '</div>' +
+                        '<div class="e-meta">' + p.kind + '</div>' +
+                    '</div>' +
+                    '<div style="text-align:right">' +
+                        '<div class="e-price">' + p.total + ' сом</div>' +
+                        '<div class="e-date">' + p.date + '</div>' +
+                    '</div>';
+                grid.appendChild(item);
+                return;
+            }
+            item.className = 'product-item';
+            var thumb;
+            if (p.photo) {
+                thumb = '<img src="' + p.photo + '" alt="' + p.name + '">';
+            } else {
+                thumb = '<div class="thumb">📦</div>';
+            }
+            var cat = p.category ? '<div class="p-qty">' + p.category + ' · ' + p.quantity + ' шт.</div>'
+                                 : '<div class="p-qty">' + p.quantity + ' шт.</div>';
+            item.innerHTML = thumb +
+                '<div>' +
+                    '<div class="p-name">' + p.name + '</div>' +
+                    cat +
+                '</div>';
+            grid.appendChild(item);
+        });
+    }
+
+    function scrollToResultsOnce() {
+        if (scrolledForThisSearch) return;
+        scrolledForThisSearch = true;
+        var card = grid.closest('.card') || grid;
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function doSearch() {
+        var q = input.value.trim();
+        if (q.length === 0) {
+            grid.innerHTML = originalHTML;
+            return;
+        }
+        scrollToResultsOnce();
+        fetch('{% url "home_search" %}?q=' + encodeURIComponent(q), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (res) {
+            if (!res.ok) throw new Error('bad status ' + res.status);
+            return res.json();
+        })
+        .then(function (data) {
+            if (data.ok) {
+                renderResults(data.results);
+            } else {
+                renderEmpty();
+            }
+        })
+        .catch(function () { renderEmpty(); });
+    }
+
+    input.addEventListener('input', function () {
+        if (input.value.trim().length === 0) scrolledForThisSearch = false;
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(doSearch, 200);
+    });
+})();
 </script>
 
 </body>

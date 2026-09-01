@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% block title %}AI Ассистент — Korvon{% endblock %}
+{% block nav_ai %}active{% endblock %}
+
+{% block content %}
+<div class="page-header ai-header">
+    <div>
+        <h1>
+            <svg viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M9 13v2M15 13v2"/></svg>
+            AI Ассистент
+        </h1>
+        <div class="page-sub">Спросите про остатки, категории или цены на ваши товары.</div>
+    </div>
+    <button type="button" class="btn btn-ghost" id="aiResetBtn">Очистить чат</button>
+</div>
+
+<div class="ai-chat">
+    <div class="ai-chat-messages" id="aiMessages">
+        {% if not history %}
+        <div class="ai-msg ai-msg-model">
+            <div class="ai-bubble">Здравствуйте! Спросите меня о ваших товарах — например, «сколько у меня Futbolka на складе?» или «какой товар самый дорогой?».</div>
+        </div>
+        {% endif %}
+        {% for turn in history %}
+        <div class="ai-msg ai-msg-{{ turn.role }}">
+            <div class="ai-bubble">{{ turn.text|linebreaksbr }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    <form class="ai-chat-input" id="aiForm">
+        <input type="text" id="aiInput" placeholder="Напишите вопрос..." autocomplete="off">
+        <button type="submit" class="btn btn-primary" id="aiSendBtn">Отправить</button>
+    </form>
+</div>
+
+<script>
+(function () {
+    var messages = document.getElementById('aiMessages');
+    var form = document.getElementById('aiForm');
+    var input = document.getElementById('aiInput');
+    var sendBtn = document.getElementById('aiSendBtn');
+    var resetBtn = document.getElementById('aiResetBtn');
+
+    function scrollToBottom() {
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function renderModelText(text) {
+        return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    }
+
+    function addMessage(role, text) {
+        var wrap = document.createElement('div');
+        wrap.className = 'ai-msg ai-msg-' + role;
+        var bubble = document.createElement('div');
+        bubble.className = 'ai-bubble';
+        if (role === 'model') {
+            bubble.innerHTML = renderModelText(text);
+        } else {
+            bubble.textContent = text;
+        }
+        wrap.appendChild(bubble);
+        messages.appendChild(wrap);
+        scrollToBottom();
+        return wrap;
+    }
+
+    function addTyping() {
+        var wrap = document.createElement('div');
+        wrap.className = 'ai-msg ai-msg-model ai-msg-typing';
+        wrap.innerHTML = '<div class="ai-bubble"><span class="ai-dot"></span><span class="ai-dot"></span><span class="ai-dot"></span></div>';
+        messages.appendChild(wrap);
+        scrollToBottom();
+        return wrap;
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var text = input.value.trim();
+        if (!text) return;
+        addMessage('user', text);
+        input.value = '';
+        input.disabled = true;
+        sendBtn.disabled = true;
+        var typing = addTyping();
+
+        fetch('{% url "ai_chat_message" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ message: text })
+        })
+        .then(function (res) { return res.json().then(function (data) { return { status: res.status, data: data }; }); })
+        .then(function (result) {
+            typing.remove();
+            if (result.data.ok) {
+                addMessage('model', result.data.reply);
+            } else if (result.status === 503) {
+                addMessage('model', 'AI пока не настроен: не задан GEMINI_API_KEY на сервере.');
+            } else {
+                addMessage('model', 'Не удалось получить ответ. Попробуйте ещё раз.');
+            }
+        })
+        .catch(function () {
+            typing.remove();
+            addMessage('model', 'Ошибка соединения. Попробуйте ещё раз.');
+        })
+        .finally(function () {
+            input.disabled = false;
+            sendBtn.disabled = false;
+            input.focus();
+        });
+    });
+
+    resetBtn.addEventListener('click', function () {
+        fetch('{% url "ai_chat_reset" %}', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        }).then(function () {
+            messages.innerHTML = '';
+            addMessage('model', 'Чат очищен. Спросите меня о ваших товарах.');
+        });
+    });
+
+    scrollToBottom();
+})();
+</script>
+{% endblock %}

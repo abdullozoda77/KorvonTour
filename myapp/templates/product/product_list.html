@@ -2,6 +2,13 @@
 {% block title %}Товары — Korvon{% endblock %}
 {% block nav_products %}active{% endblock %}
 
+{% block topsearch %}
+<div class="search">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" placeholder="Поиск товаров..." id="topSearchInput" autocomplete="off">
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="page-header pr-header">
     <div>
@@ -24,9 +31,9 @@
     </div>
 </div>
 
-<div class="pr-grid">
+<div class="pr-grid" id="prGrid">
     {% for p in product %}
-    <div class="pr-card">
+    <div class="pr-card" data-name="{{ p.name|lower }}" data-category="{{ p.category|default:''|lower }}">
         {% if p.photo %}
             <img class="pr-photo" src="{{ p.photo.url }}" alt="{{ p.name }}">
         {% else %}
@@ -68,4 +75,29 @@
     </div>
     {% endfor %}
 </div>
+<div class="empty-pr" id="prNoMatch" style="grid-column: 1 / -1; display: none;">
+    По запросу ничего не найдено.
+</div>
+
+<script>
+(function () {
+    var input = document.getElementById('topSearchInput');
+    var grid = document.getElementById('prGrid');
+    var noMatch = document.getElementById('prNoMatch');
+    if (!input || !grid) return;
+
+    var cards = Array.prototype.slice.call(grid.querySelectorAll('.pr-card'));
+
+    input.addEventListener('input', function () {
+        var q = input.value.trim().toLowerCase();
+        var visibleCount = 0;
+        cards.forEach(function (card) {
+            var match = !q || card.dataset.name.indexOf(q) !== -1 || card.dataset.category.indexOf(q) !== -1;
+            card.style.display = match ? '' : 'none';
+            if (match) visibleCount++;
+        });
+        noMatch.style.display = (visibleCount === 0) ? 'block' : 'none';
+    });
+})();
+</script>
 {% endblock %}

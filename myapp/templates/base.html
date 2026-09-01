@@ -32,6 +32,10 @@
         <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
         Товары
     </a>
+    <a href="{% url 'ai_chat' %}" class="nav-item nav-ai {% block nav_ai %}{% endblock %}">
+        <svg viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M9 13v2M15 13v2"/></svg>
+        AI Ассистент
+    </a>
     <a href="{% url 'purchase_list' %}" class="nav-item {% block nav_purchases %}{% endblock %}">
         <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
         Покупки
@@ -69,10 +73,7 @@
 <!-- MAIN -->
 <main class="main">
     <div class="topbar">
-        <div class="search">
-            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input type="text" placeholder="Поиск...">
-        </div>
+        {% block topsearch %}{% endblock %}
         <div class="topbar-right">
             <button type="button" class="theme-btn" aria-label="Переключить тему">
                 <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>

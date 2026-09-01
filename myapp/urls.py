@@ -35,6 +35,10 @@ urlpatterns = [
     path('purchase/', purchase_list, name='purchase_list'),
     path('employees/', employees_list, name='employees_list'),
     path('reports/', reports, name='reports'),
+    path('home/search/', home_search, name='home_search'),
+    path('ai/', ai_chat, name='ai_chat'),
+    path('ai/message/', ai_chat_message, name='ai_chat_message'),
+    path('ai/reset/', ai_chat_reset, name='ai_chat_reset'),
     path('settings/', settings, name='settings'),
     path('notifications/seen/', mark_notifications_seen, name='mark_notifications_seen'),
 ]
