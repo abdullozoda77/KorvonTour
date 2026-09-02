@@ -17,10 +17,24 @@
         <div class="form-grid">
             <div class="form-group">
                 <label for="id_image">Фото профиля</label>
-                <input type="file" id="id_image" name="image" accept="image/*">
-                {% if user.profile.image %}
-                <img src="{{ user.profile.image.url }}" alt="Фото профиля" class="avatar-preview" style="margin-top:8px; width:80px; height:80px; border-radius:50%; object-fit:cover;">
-                {% endif %}
+                <div class="file-upload">
+                    <div class="file-upload-preview" id="fileUploadPreview">
+                        {% if user.profile.image %}
+                        <img src="{{ user.profile.image.url }}" alt="Фото профиля" id="fileUploadPreviewImg">
+                        {% else %}
+                        <img src="" alt="Фото профиля" id="fileUploadPreviewImg" style="display:none;">
+                        <span id="fileUploadPreviewLetter">{{ user.get_full_name|default:user.username|slice:":1"|default:"Р" }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="file-upload-controls">
+                        <label for="id_image" class="btn btn-ghost btn-sm file-upload-btn">
+                            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+                            Выбрать файл
+                        </label>
+                        <span class="file-upload-name" id="fileUploadName">Файл не выбран</span>
+                        <input type="file" id="id_image" name="image" accept="image/*" class="file-upload-input">
+                    </div>
+                </div>
             </div>
             <div class="form-group">
                 <label for="first_name">Имя</label>
@@ -47,4 +61,29 @@
         </div>
     </form>
 </div>
+
+<script>
+(function () {
+    var input = document.getElementById('id_image');
+    var nameEl = document.getElementById('fileUploadName');
+    var img = document.getElementById('fileUploadPreviewImg');
+    var letter = document.getElementById('fileUploadPreviewLetter');
+    if (!input) return;
+    input.addEventListener('change', function () {
+        var file = input.files && input.files[0];
+        if (!file) {
+            nameEl.textContent = 'Файл не выбран';
+            return;
+        }
+        nameEl.textContent = file.name;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            img.src = e.target.result;
+            img.style.display = 'block';
+            if (letter) letter.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    });
+})();
+</script>
 {% endblock %}
