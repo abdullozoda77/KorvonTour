@@ -267,6 +267,9 @@ html.sidebar-collapsed .nav-item svg { margin: 0 auto; }
     margin-bottom: 28px;
 }
 
+.topbar-title h1 { font-size: 22px; font-weight: 800; color: var(--text); line-height: 1.2; }
+.topbar-title p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
 .search {
     flex: 1;
     max-width: 480px;
