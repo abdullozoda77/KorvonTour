@@ -20,6 +20,8 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', '').split(',') if h.strip()]
+# Forms (login etc.) over https://korvontour.king.tj: every name in ALLOWED_HOSTS is trusted for HTTPS too.
+CSRF_TRUSTED_ORIGINS = ['https://' + ('*' + h if h.startswith('.') else h) for h in ALLOWED_HOSTS if h != '*']
 
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
